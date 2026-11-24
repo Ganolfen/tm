@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="T&amp;M">
+<meta name="theme-color" content="#14202b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-180.png">
+<title>Time &amp; Motion</title>
+<style>
+/* System fonts only, nothing loaded from elsewhere. Large targets for one-handed use. */
+:root { --bg:#f2f4f6; --card:#fff; --ink:#14202b; --muted:#5b6875; --line:#d3dae1; --acc:#0b6e8a; --acc-ink:#fff;
+  --warn:#9a5b00; --warn-bg:#fff3dc; --bad:#a3283c; --bad-bg:#fde8ec; --ok:#24783e; --ok-bg:#e3f4e8; --now:#0b6e8a; --now-bg:#e1f1f6;
+  --g-pt:#2b62c4; --g-pc:#0d7c87; --g-talk:#5b7f1d; --g-wait:#b4306a; --g-oth:#6d7884; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0d141a; --card:#16212b; --ink:#e6ecf1; --muted:#9aa8b5; --line:#2a3946;
+  --acc:#3fb2d1; --acc-ink:#06232c; --warn:#f0b54a; --warn-bg:#33270f; --bad:#f07a8c; --bad-bg:#3a1820; --ok:#6cd08a; --ok-bg:#12301c;
+  --now:#3fb2d1; --now-bg:#0f2c36; --g-pt:#7aa5f0; --g-pc:#45c0c9; --g-talk:#a3cc6a; --g-wait:#e8709f; --g-oth:#a3afba; } }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin:0; background:var(--bg); color:var(--ink); font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+body { padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
+main { max-width: 640px; margin: 0 auto; }
+h1 { font-size: 22px; margin: 4px 0 10px; } h2 { font-size: 17px; margin: 18px 0 8px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px; margin:10px 0; }
+.muted { color:var(--muted); font-size:14px; } .small { font-size:13px; }
+.row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.spread { justify-content:space-between; }
+button, select, input { font:inherit; color:inherit; }
+button { min-height:48px; padding:8px 14px; border-radius:10px; border:1px solid var(--line); background:var(--card); font-weight:600; cursor:pointer; touch-action:manipulation; }
+button.primary { background:var(--acc); color:var(--acc-ink); border-color:var(--acc); }
+button.danger { color:var(--bad); border-color:var(--bad); }
+button.armed { background:var(--bad); color:#fff; border-color:var(--bad); }
+button:disabled { opacity:.45; }
+button.wide { width:100%; }
+label { display:block; margin:10px 0 4px; font-weight:600; font-size:15px; }
+select, input[type=text], input[type=time] { width:100%; min-height:48px; padding:8px 10px; border:1px solid var(--line); border-radius:10px; background:var(--card); }
+input[type=checkbox] { width:26px; height:26px; vertical-align:middle; margin-right:8px; }
+.check { display:flex; align-items:center; font-weight:600; margin:12px 0; }
+.banner { border-radius:10px; padding:10px 12px; margin:10px 0; font-size:15px; }
+.banner.warn { background:var(--warn-bg); color:var(--warn); } .banner.bad { background:var(--bad-bg); color:var(--bad); } .banner.ok { background:var(--ok-bg); color:var(--ok); }
+.chip { display:inline-block; padding:2px 8px; border-radius:99px; font-size:12px; font-weight:700; border:1px solid currentColor; }
+.list .item { padding:10px 0; border-top:1px solid var(--line); } .list .item:first-child { border-top:0; }
+/* session screen */
+.now { background:var(--now-bg); border:2px solid var(--now); border-radius:14px; padding:12px; position:sticky; top:max(4px, env(safe-area-inset-top)); z-index:2; }
+.now .act { font-size:24px; font-weight:800; } .now .timer { font: 700 30px/1.1 ui-monospace, "SF Mono", Menlo, monospace; font-variant-numeric:tabular-nums; }
+.grp { margin:12px 0 4px; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+.grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:8px; }
+@media (min-width:520px) { .grid { grid-template-columns:repeat(3, 1fr); } }
+.act-btn { min-height:60px; text-align:left; border-left:6px solid var(--gc, var(--line)); line-height:1.2; }
+.act-btn.on { background:var(--now); color:var(--acc-ink); border-color:var(--now); }
+.places { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; } .places button { min-height:40px; font-size:14px; padding:6px 10px; }
+.bar { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px; }
+.tl { font: 13px/1.5 ui-monospace, "SF Mono", Menlo, monospace; }
+pre.rep { white-space:pre-wrap; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, monospace; margin:0; }
+</style>
+</head>
+<body>
+<main id="app"><p>Loading…</p></main>
+<script>/* Time & Motion tools in JavaScript (phase 0, 24 Nov 2026): the twin of tools/tm.py: the site file, the mapping check and the
+   session-file validator, with the same checks, messages and JSON. No dependencies and no network: it runs in Node and in a
+   browser (the Time & Motion app embeds it: window.TM). test_tm.py checks that it and tm.py agree.
+
+   Node:  node tm.js sitefile <orange-sim folder> [--site wexham] > tm-site-wexham.json
+          node tm.js check-mapping <orange-sim folder> [--site wexham]
+          node tm.js validate <orange-sim folder> <session.json> [more.json ...] [--site wexham] [--sitefile tm-site.json] [--json]
+          node tm.js checksum <session.json>
+   Browser/app:  TM.validate(doc, siteFile, name) → report; TM.checksum(doc) → "sha256:…"; TM.parseTime(s) → ms or null.
+   The format (ed-tm/1), its codes and its rules are in engine-data/data-dictionary.json, section staffObservation. */
+(function (root) {
+  "use strict";
+  const FORMAT = "ed-tm/1", SITE_FORMAT = "ed-tm-site/1";
+  const ID = /^[A-Z0-9-]{4,24}$/, TAG = /^[A-Z]{1,3}$/;
+  const TIME = /^([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2})(?:\.([0-9]{1,3}))?(Z|[+-][0-9]{2}:[0-9]{2})$/;
+  const CAP = 10, H4 = 4 * 3600000, H1 = 3600000, M1 = 60000;
+
+  // ---------------------------------------------------------------- shared pieces (identical in tm.py)
+  const isInt = (x) => typeof x === "number" && Number.isSafeInteger(x);
+  const q = (v) => (v === undefined ? "null" : JSON.stringify(v));
+  const empty = (v) => v === undefined || v === null || v === "";
+  const has = (o, k) => o != null && Object.prototype.hasOwnProperty.call(o, k);
+  const fdiv = (a, b) => Math.floor(a / b);
+
+  function daysFromCivil(y, m, d) {
+    y -= m <= 2 ? 1 : 0;
+    const era = fdiv(y, 400), yoe = y - era * 400;
+    const doy = fdiv(153 * (m + (m > 2 ? -3 : 9)) + 2, 5) + d - 1;
+    const doe = yoe * 365 + fdiv(yoe, 4) - fdiv(yoe, 100) + doy;
+    return era * 146097 + doe - 719468;
+  }
+  function parseTime(s) {
+    if (typeof s !== "string") return null;
+    const m = TIME.exec(s); if (!m) return null;
+    const y = +m[1], mo = +m[2], d = +m[3], h = +m[4], mi = +m[5], se = +m[6];
+    const ms = +((m[7] || "").padEnd(3, "0") || 0);
+    const leap = y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0);
+    const dim = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    if (!(mo >= 1 && mo <= 12 && d >= 1 && d <= dim[mo - 1] && h <= 23 && mi <= 59 && se <= 59)) return null;
+    let off = 0;
+    if (m[8] !== "Z") {
+      const oh = +m[8].slice(1, 3), om = +m[8].slice(4, 6);
+      if (oh > 14 || om > 59) return null;
+      off = (oh * 60 + om) * 60 * (m[8][0] === "+" ? 1 : -1);
+    }
+    return ((daysFromCivil(y, mo, d) * 86400 + h * 3600 + mi * 60 + se) - off) * 1000 + ms;
+  }
+  function canon(x) {
+    if (x === null) return "null";
+    if (x === true) return "true";
+    if (x === false) return "false";
+    if (typeof x === "number") { if (!isInt(x)) throw new Error("not a safe whole number"); return String(x); }
+    if (typeof x === "string") return JSON.stringify(x);
+    if (Array.isArray(x)) return "[" + x.map(canon).join(",") + "]";
+    if (typeof x === "object") return "{" + Object.keys(x).sort().map((k) => JSON.stringify(k) + ":" + canon(x[k])).join(",") + "}";
+    throw new Error("not JSON");
+  }
+  // SHA-256 (FIPS 180-4) over bytes; a plain implementation so it runs anywhere, synchronously
+  const K = new Uint32Array([0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
+    0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d,
+    0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a,
+    0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2]);
+  function sha256hex(bytes) {
+    const n = bytes.length, len = ((n + 9 + 63) >> 6) << 6, b = new Uint8Array(len);
+    b.set(bytes); b[n] = 0x80;
+    const bits = n * 8; b[len - 4] = (bits >>> 24) & 255; b[len - 3] = (bits >>> 16) & 255; b[len - 2] = (bits >>> 8) & 255; b[len - 1] = bits & 255;
+    b[len - 5] = Math.floor(bits / 4294967296) & 255;
+    const H = new Uint32Array([0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19]), W = new Uint32Array(64);
+    const rotr = (x, r) => (x >>> r) | (x << (32 - r));
+    for (let o = 0; o < len; o += 64) {
+      for (let i = 0; i < 16; i++) W[i] = (b[o + 4 * i] << 24) | (b[o + 4 * i + 1] << 16) | (b[o + 4 * i + 2] << 8) | b[o + 4 * i + 3];
+      for (let i = 16; i < 64; i++) {
+        const s0 = rotr(W[i - 15], 7) ^ rotr(W[i - 15], 18) ^ (W[i - 15] >>> 3), s1 = rotr(W[i - 2], 17) ^ rotr(W[i - 2], 19) ^ (W[i - 2] >>> 10);
+        W[i] = (W[i - 16] + s0 + W[i - 7] + s1) >>> 0;
+      }
+      let a = H[0], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7], bb = H[1];
+      for (let i = 0; i < 64; i++) {
+        const S1 = rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25), ch = (e & f) ^ (~e & g), t1 = (h + S1 + ch + K[i] + W[i]) >>> 0;
+        const S0 = rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22), mj = (a & bb) ^ (a & c) ^ (bb & c), t2 = (S0 + mj) >>> 0;
+        h = g; g = f; f = e; e = (d + t1) >>> 0; d = c; c = bb; bb = a; a = (t1 + t2) >>> 0;
+      }
+      H[0] += a; H[1] += bb; H[2] += c; H[3] += d; H[4] += e; H[5] += f; H[6] += g; H[7] += h;
+    }
+    return Array.from(H, (x) => x.toString(16).padStart(8, "0")).join("");
+  }
+  function checksum(doc) {
+    const body = {}; for (const k of Object.keys(doc)) if (k !== "checksum") body[k] = doc[k];
+    return "sha256:" + sha256hex(new TextEncoder().encode(canon(body)));
+  }
+  const pad2 = (x) => String(x).padStart(2, "0");
+  function fmtMs(ms) { const s = fdiv(ms, 1000); return `${fdiv(s, 3600)}:${pad2(fdiv(s, 60) % 60)}:${pad2(s % 60)}`; }
+  function tagN(i) { let s = ""; i += 1; while (i) { const r = (i - 1) % 26; i = fdiv(i - 1, 26); s = String.fromCharCode(65 + r) + s; } return s; }
+
+  // ---------------------------------------------------------------- the site file
+  function checkMapping(pack) {
+    const P = [], so = pack.dictionary.staffObservation;
+    if (!so) return ["data-dictionary.json has no staffObservation section"];
+    const M = pack.mapping.staffObservation;
+    if (!M) return ["data-mapping.json has no staffObservation section"];
+    const bands = so.session.fields.find((f) => f.name === "gradeBand").values;
+    const acts = so.activities.map((a) => a.code), zones = (pack.site.zones || []).map((z) => z.id), kinds = so.siteFile.placeKinds;
+    for (const v of M.taxonomyVersions || []) if (!so.taxonomyVersions.includes(v)) P.push(`taxonomy version ${v} isn't one the dictionary defines`);
+    if (!(M.taxonomyVersions || []).length) P.push("taxonomyVersions is empty");
+    for (const name of ["gradeLabels", "bandToModel"]) {
+      const g = M[name] || {};
+      for (const b of Object.keys(g)) if (!bands.includes(b)) P.push(`${name}: ${q(b)} isn't a grade band`);
+      for (const b of bands) if (!has(g, b)) P.push(`${name}: no entry for grade band ${q(b)}`);
+    }
+    for (const [b, v] of Object.entries(M.bandToModel || {})) if (v !== null && !so.modelStates.grades.includes(v)) P.push(`bandToModel: ${b} -> ${q(v)} isn't an engine grade`);
+    const A = M.activityToState || {};
+    for (const a of Object.keys(A)) if (!acts.includes(a)) P.push(`activityToState: ${q(a)} isn't an activity`);
+    for (const a of acts) if (!has(A, a)) P.push(`activityToState: no entry for activity ${q(a)}`);
+    for (const [a, v] of Object.entries(A)) {
+      const isObj = v !== null && typeof v === "object" && !Array.isArray(v);
+      if (!isObj || !so.modelStates.values.includes(v.state)) P.push(`activityToState: ${a} -> ${q(isObj ? v.state : v)} isn't a model state`);
+    }
+    const PL = M.places || {}, G = pack.geometry, route = G.route.places, plan = G.plan, R = PL.route || {};
+    for (const k of Object.keys(R)) if (!has(route, k)) P.push(`places.route: ${q(k)} isn't a place in geometry.json`);
+    for (const k of Object.keys(route)) if (!has(R, k)) P.push(`places.route: no entry for geometry place ${q(k)}`);
+    for (const [k, n] of Object.entries(PL.numbered || {})) {
+      if (!has(plan, k) || !Array.isArray(plan[k])) P.push(`places.numbered: ${q(k)} isn't a list in geometry.json's plan`);
+      else if ((n.numbers || []).length !== plan[k].length) P.push(`places.numbered: ${k} has ${(n.numbers || []).length} numbers for ${plan[k].length} places in geometry.json`);
+    }
+    const rooms = plan.rooms || {}, PR = PL.rooms || {};
+    for (const k of Object.keys(PR)) if (!has(rooms, k)) P.push(`places.rooms: ${q(k)} isn't a room in geometry.json`);
+    for (const k of Object.keys(rooms)) if (!has(PR, k)) P.push(`places.rooms: no entry for geometry room ${q(k)}`);
+    const pl = placesOf(pack);
+    for (const p of pl) {
+      if (!kinds.includes(p.kind)) P.push(`place ${p.id}: kind ${q(p.kind)} isn't one of the dictionary's place kinds`);
+      if (p.zone !== null && !zones.includes(p.zone)) P.push(`place ${p.id}: zone ${q(p.zone)} isn't a zone in site.json`);
+      if (!p.label) P.push(`place ${p.id} has no label`);
+    }
+    const ids = pl.map((p) => p.id), dup = [...new Set(ids.filter((i) => ids.indexOf(i) !== ids.lastIndexOf(i)))].sort();
+    for (const i of dup) P.push(`place id ${q(i)} is used more than once`);
+    return P;
+  }
+  function placesOf(pack) {
+    const M = pack.mapping.staffObservation.places, G = pack.geometry, route = G.route.places, plan = G.plan, out = [];
+    const add = (id, info, xy) => out.push({ id, label: info.label || "", kind: info.kind || "", zone: info.zone === undefined ? null : info.zone,
+      x: xy ? xy[0] : null, y: xy ? xy[1] : null, confirm: !!info.confirm });
+    const R = M.route || {};
+    for (const [k, xy] of Object.entries(route)) if (has(R, k)) add(k, R[k], xy);
+    for (const [k, n] of Object.entries(M.numbered || {}))
+      (plan[k] || []).forEach((xy, i) => { if (i < (n.numbers || []).length) add(`${n.idPrefix}${n.numbers[i]}`, { label: `${n.labelPrefix} ${n.numbers[i]}`, kind: n.kind, zone: n.zone }, xy); });
+    for (const [k, xy] of Object.entries(plan.rooms || {})) if (has(M.rooms || {}, k)) add(k, M.rooms[k], xy);
+    if (M.alStart && plan.alStart) add(M.alStart.id, M.alStart, plan.alStart);
+    for (const [k, info] of Object.entries(M.offplan || {})) add(k, info, null);
+    return out;
+  }
+  function buildSiteFile(pack) {
+    const problems = checkMapping(pack);
+    if (problems.length) throw new Error("The mapping has problems; fix them first:\n  " + problems.join("\n  "));
+    const so = pack.dictionary.staffObservation, M = pack.mapping.staffObservation, S = pack.site, pl = placesOf(pack);
+    const xs = pl.filter((p) => p.x !== null).map((p) => p.x), ys = pl.filter((p) => p.y !== null).map((p) => p.y);
+    const words = {}; for (const [k, v] of Object.entries(S.words || {})) if (k !== "about") words[k] = v;
+    return { format: SITE_FORMAT, siteId: pack.siteId, siteName: S.site.name, taxonomyVersions: M.taxonomyVersions,
+      zones: (S.zones || []).map((z) => ({ id: z.id, name: z.name, slot: z.slot === undefined ? null : z.slot })), words, gradeLabels: M.gradeLabels, places: pl,
+      bounds: xs.length ? { xMin: Math.min(...xs), xMax: Math.max(...xs), yMin: Math.min(...ys), yMax: Math.max(...ys) } : null, outline: [], contract: so };
+  }
+
+  // ---------------------------------------------------------------- the validator
+  function Report(name) {
+    const errors = [], warnings = [], counts = new Map();
+    const add = (lst, tag, code, at, msg) => {
+      const key = tag + "|" + code, n = (counts.get(key) || 0) + 1; counts.set(key, n);
+      if (n <= CAP) lst.push({ code, at, message: msg });
+    };
+    return {
+      errors, warnings,
+      err: (code, at, msg) => add(errors, "e", code, at, msg),
+      warn: (code, at, msg) => add(warnings, "w", code, at, msg),
+      finish(summary) {
+        for (const [lst, tag] of [[errors, "e"], [warnings, "w"]]) {
+          const codes = []; for (const e of lst) if (!codes.includes(e.code)) codes.push(e.code);
+          for (const c of codes) { const n = counts.get(tag + "|" + c); if (n > CAP) lst.push({ code: c, at: "", message: `... and ${n - CAP} more of the same kind` }); }
+        }
+        return { file: name, ok: !errors.length, errors, warnings, summary };
+      },
+    };
+  }
+  function findFloats(x, path, out) {
+    if (typeof x === "number") { if (!isInt(x)) out.push(path); }
+    else if (Array.isArray(x)) x.forEach((v, i) => findFloats(v, `${path}[${i}]`, out));
+    else if (x !== null && typeof x === "object") for (const [k, v] of Object.entries(x)) findFloats(v, path ? `${path}.${k}` : k, out);
+  }
+
+  function validate(doc, site, name) {
+    name = name || "session";
+    const R = Report(name), so = site.contract;
+    if (doc === null || typeof doc !== "object" || Array.isArray(doc)) { R.err("not-object", "", "the file isn't a JSON object"); return R.finish(null); }
+    for (const k of so.file.keys) if (!has(doc, k)) R.err("missing-key", k, `the file has no ${q(k)}`);
+    for (const k of Object.keys(doc)) if (!so.file.keys.includes(k)) R.warn("unknown-key", k, `the file has a key the format doesn't define: ${q(k)}`);
+    if (doc.format !== FORMAT) { R.err("format", "format", `format should be ${q(FORMAT)} (got ${q(doc.format)})`); return R.finish(null); }
+    const tv = doc.taxonomyVersion;
+    if (!(isInt(tv) && so.taxonomyVersions.includes(tv) && site.taxonomyVersions.includes(tv))) {
+      R.err("taxonomy", "taxonomyVersion", `taxonomy version ${q(tv)} isn't one this site's mapping reads`); return R.finish(null);
+    }
+    if (doc.siteId !== site.siteId) R.err("site", "siteId", `the file is for site ${q(doc.siteId)}, but the site file is ${q(site.siteId)}`);
+    const fl = []; findFloats(doc, "", fl);
+    for (const p of fl) R.err("not-whole", p, "numbers in a session file must be whole numbers");
+    const acts = Object.fromEntries(so.activities.map((a) => [a.code, a])), evs = Object.fromEntries(so.events.map((e) => [e.code, e]));
+    const places = new Set(site.places.map((p) => p.id)), zones = new Set(site.zones.map((z) => z.id));
+
+    function checkValue(f, v, at) {
+      const t = f.type; let ok;
+      switch (t) {
+        case "datetime": ok = parseTime(v) !== null; if (!ok) R.err("bad-time", at, `${at} isn't a time with its offset, e.g. 2026-12-01T14:03:27+00:00 (got ${q(v)})`); return ok;
+        case "id": ok = typeof v === "string" && ID.test(v); if (!ok) R.err("bad-id", at, `${at} should be 4–24 of A–Z, 0–9 and - (got ${q(v)})`); return ok;
+        case "category": ok = typeof v === "string" && f.values.includes(v); if (!ok) R.err("bad-value", at, `${at} must be one of: ${f.values.join(", ")} (got ${q(v)})`); return ok;
+        case "boolean": ok = typeof v === "boolean"; if (!ok) R.err("bad-value", at, `${at} must be true or false (got ${q(v)})`); return ok;
+        case "integer": ok = isInt(v) && v >= 1; if (!ok) R.err("bad-value", at, `${at} must be a whole number from 1 (got ${q(v)})`); return ok;
+        case "count": ok = isInt(v) && v >= 0; if (!ok) R.err("bad-value", at, `${at} must be a whole number from 0, or null (got ${q(v)})`); return ok;
+        case "activity": ok = typeof v === "string" && has(acts, v); if (!ok) R.err("bad-activity", at, `${at}: ${q(v)} isn't an activity in taxonomy ${doc.taxonomyVersion}`); return ok;
+        case "event": ok = typeof v === "string" && has(evs, v); if (!ok) R.err("bad-event", at, `${at}: ${q(v)} isn't an event in taxonomy ${doc.taxonomyVersion}`); return ok;
+        case "patientTag": ok = typeof v === "string" && TAG.test(v); if (!ok) R.err("bad-tag", at, `${at} should be A–Z, then AA, AB … (got ${q(v)})`); return ok;
+        case "place": ok = typeof v === "string" && places.has(v); if (!ok) R.err("bad-place", at, `${at}: ${q(v)} isn't a place in the site file`); return ok;
+        case "zone": ok = typeof v === "string" && zones.has(v); if (!ok) R.err("bad-value", at, `${at}: ${q(v)} isn't a zone of this site`); return ok;
+        case "text": ok = typeof v === "string" && [...v].length <= 500; if (!ok) R.err("bad-text", at, `${at} must be text of at most 500 characters`); return ok;
+        default: return true;
+      }
+    }
+    function checkRow(fields, row, at) {
+      if (row === null || typeof row !== "object" || Array.isArray(row)) { R.err("not-object", at, `${at} isn't an object`); return false; }
+      let ok = true; const names = fields.map((f) => f.name);
+      for (const k of Object.keys(row)) if (!names.includes(k)) R.warn("unknown-field", `${at}.${k}`, `${at} has a field the format doesn't define: ${q(k)}`);
+      for (const f of fields) {
+        const v = row[f.name];
+        if (empty(v)) { if (f.required) { R.err("missing-field", `${at}.${f.name}`, `${at} has no ${f.name}`); ok = false; } continue; }
+        ok = checkValue(f, v, `${at}.${f.name}`) && ok;
+      }
+      return ok;
+    }
+
+    // ---- session
+    const sess = doc.session;
+    let sOk = has(doc, "session") ? checkRow(so.session.fields, sess, "session") : false, t0 = null, t1 = null;
+    if (sOk) {
+      t0 = parseTime(sess.start); t1 = parseTime(sess.end);
+      if (t1 <= t0) { R.err("session-order", "session.end", "the session must end after it starts"); sOk = false; }
+      const a = parseTime(sess.shiftStart), b = parseTime(sess.shiftEnd);
+      if (a !== null && b !== null && b <= a) R.err("session-order", "session.shiftEnd", "the shift must end after it starts");
+    }
+    // ---- tables: field checks
+    const T = so.tables, rows = {}, tOk = {};
+    for (const nm of Object.keys(T)) {
+      const L = doc[nm];
+      if (!has(doc, nm)) { tOk[nm] = false; rows[nm] = []; continue; }
+      if (!Array.isArray(L)) { R.err("not-list", nm, `${nm} should be a list`); tOk[nm] = false; rows[nm] = []; continue; }
+      let good = true;
+      L.forEach((r, i) => { good = checkRow(T[nm].fields, r, `${nm}[${i}]`) && good; });
+      rows[nm] = L; tOk[nm] = good;
+    }
+    const inside = (t) => sOk && t0 <= t && t <= t1;
+    // ---- intervals and pauses
+    const IV = rows.intervals, PA = rows.pauses;
+    if (tOk.intervals) IV.forEach((r, i) => {
+      const at = `intervals[${i}]`;
+      if (r.seq !== i + 1) R.err("seq", at, `${at} has seq ${r.seq}; rows must run 1, 2, 3 … in order`);
+      const a = parseTime(r.start), b = parseTime(r.end);
+      if (b <= a) R.err("empty-interval", at, `${at} must end after it starts`);
+      else if (b - a > H4) R.warn("long-interval", at, `${at} (${r.activity}) lasts ${fmtMs(b - a)}, over 4 hours`);
+      const act = acts[r.activity], tag = r.patient || "";
+      if (act.patient === "expected" && !tag) R.warn("no-patient", at, `${at} (${r.activity}) has no patient tag`);
+      if (act.patient === "none" && tag) R.warn("patient-on-none", at, `${at} (${r.activity}) has a patient tag, which this activity doesn't take`);
+      if (r.screen && !act.computer) R.err("screen-not-computer", `${at}.screen`, `${at} (${r.activity}) isn't computer work, so it takes no screen flag`);
+      if (sOk && !(inside(a) && inside(b))) R.err("outside-session", at, `${at} runs outside the session`);
+    });
+    if (tOk.pauses) PA.forEach((r, i) => {
+      const at = `pauses[${i}]`, a = parseTime(r.start), b = parseTime(r.end);
+      if (b <= a) R.err("empty-pause", at, `${at} must end after it starts`);
+      if (sOk && !(inside(a) && inside(b))) R.err("outside-session", at, `${at} runs outside the session`);
+    });
+    let tiled = false;
+    if (sOk && tOk.intervals && tOk.pauses) {
+      const segs = IV.map((r, i) => [parseTime(r.start), parseTime(r.end), `intervals[${i}]`]).concat(PA.map((r, i) => [parseTime(r.start), parseTime(r.end), `pauses[${i}]`]))
+        .sort((x, y) => x[0] - y[0] || x[1] - y[1] || (x[2] < y[2] ? -1 : x[2] > y[2] ? 1 : 0));
+      if (!segs.length) R.err("no-intervals", "intervals", "the file has no intervals");
+      else {
+        tiled = true;
+        if (segs[0][0] !== t0) { R.err("tiling", segs[0][2], `the first interval or pause should start at session.start (it starts ${fmtMs(Math.abs(segs[0][0] - t0))} ${segs[0][0] > t0 ? "after" : "before"})`); tiled = false; }
+        for (let i = 1; i < segs.length; i++) {
+          const p = segs[i - 1], s = segs[i];
+          if (s[0] !== p[1]) { R.err("tiling", s[2], `${s[2]} should start where ${p[2]} ends: ${s[0] > p[1] ? "a gap" : "an overlap"} of ${fmtMs(Math.abs(s[0] - p[1]))}`); tiled = false; }
+        }
+        const last = segs[segs.length - 1];
+        if (last[1] !== t1) { R.err("tiling", last[2], `the last interval or pause should end at session.end (it ends ${fmtMs(Math.abs(last[1] - t1))} ${last[1] < t1 ? "before" : "after"})`); tiled = false; }
+      }
+    }
+    const pauses = tOk.pauses ? PA.map((r) => [parseTime(r.start), parseTime(r.end)]) : [];
+    const paused = (t) => pauses.some(([a, b]) => a < t && t < b);
+    // ---- timed tables: in the session, in order
+    function timed(nm, outside) {
+      if (!tOk[nm]) return [];
+      const ts = [];
+      rows[nm].forEach((r, i) => {
+        const t = parseTime(r.time), at = `${nm}[${i}]`;
+        if (sOk && !inside(t)) (outside === "warn" ? R.warn : R.err)("outside-session", at, `${at} is timed outside the session`);
+        if (ts.length && t < ts[ts.length - 1]) R.err("out-of-order", at, `${at} is earlier than the row before it; rows must be in time order`);
+        ts.push(t);
+      });
+      return ts;
+    }
+    const tp = timed("places", "err"), te = timed("events", "err"), tc = timed("context", "err"); timed("notes", "warn");
+    // (edits are timed when the correction was made, which may be after the session)
+    // ---- events
+    if (tOk.events) {
+      let open = 0;
+      rows.events.forEach((r, i) => {
+        const at = `events[${i}]`, e = evs[r.event];
+        for (const need of e.needs) if (empty(r[need])) R.err("event-missing", at, `${at} (${r.event}) needs ${need}`);
+        if (r.event === "multitask_start") open += 1;
+        else if (r.event === "multitask_end") { if (open === 0) R.err("multitask", at, `${at} ends a multitask that never started`); else open -= 1; }
+        if (paused(te[i])) R.warn("event-in-pause", at, `${at} is timed during a pause`);
+      });
+      if (open) R.warn("multitask-open", "events", `${open} multitask(s) still open at the end of the session`);
+    }
+    // ---- context: gaps over 60 min
+    if (sOk && tOk.context) {
+      const pts = [t0].concat(tc.filter((t) => inside(t)), [t1]), gaps = [];
+      for (let i = 1; i < pts.length; i++) if (pts[i] - pts[i - 1] > H1) gaps.push(pts[i] - pts[i - 1]);
+      if (gaps.length) R.warn("context-gap", "context", `${gaps.length} stretch(es) of over 60 min without a context snapshot (longest ${fmtMs(Math.max(...gaps))})`);
+    }
+    // ---- places: one in the first minute
+    if (sOk && tOk.places && !tp.some((t) => t0 <= t && t <= t0 + M1)) R.warn("no-first-place", "places", "no place recorded in the session's first minute");
+    // ---- patient tags first met in order (by interval)
+    if (tOk.intervals) {
+      const first = [];
+      for (const r of IV) { const g = r.patient || ""; if (g && !first.includes(g)) first.push(g); }
+      const expect = first.map((_, i) => tagN(i));
+      if (first.join(",") !== expect.join(",")) R.warn("tag-order", "intervals", `patient tags are first met as ${first.join(", ")}; expected ${expect.join(", ")}`);
+    }
+    // ---- checksum
+    if (has(doc, "checksum") && !fl.length) {
+      try { if (doc.checksum !== checksum(doc)) R.err("checksum", "checksum", "the checksum doesn't match: the file changed after export, or was damaged"); }
+      catch (e) { R.err("checksum", "checksum", "the checksum can't be worked out (the file holds something that isn't plain JSON)"); }
+    }
+    // ---- summary
+    let summary = null;
+    if (tiled && !R.errors.length) {
+      const by = {}; for (const a of Object.keys(acts)) by[a] = 0;
+      for (const r of IV) by[r.activity] += parseTime(r.end) - parseTime(r.start);
+      let seen = 0; for (const [k, v] of Object.entries(by)) if (k !== "unseen") seen += v;
+      const bySec = {}; for (const [k, v] of Object.entries(by)) if (v) bySec[k] = fdiv(v, 1000);
+      summary = { sessionSec: fdiv(t1 - t0, 1000), observedSec: fdiv(seen, 1000), unseenSec: fdiv(by.unseen, 1000),
+        pausedSec: fdiv(pauses.reduce((s, [a, b]) => s + b - a, 0), 1000), intervals: IV.length,
+        patients: new Set(IV.filter((r) => r.patient).map((r) => r.patient)).size, events: rows.events.length,
+        context: rows.context.length, places: rows.places.length,
+        screenNotSeenSec: fdiv(IV.filter((r) => r.screen === "not_seen").reduce((s, r) => s + parseTime(r.end) - parseTime(r.start), 0), 1000),
+        byActivitySec: bySec };
+    }
+    return R.finish(summary);
+  }
+
+  const TM = { FORMAT, SITE_FORMAT, parseTime, canon, sha256hex, checksum, checkMapping, placesOf, buildSiteFile, validate, tagN, fmtMs };
+  if (typeof module !== "undefined" && module.exports) module.exports = TM; else root.TM = TM;
+
+  // ---------------------------------------------------------------- command line (Node)
+  if (typeof require !== "undefined" && typeof module !== "undefined" && require.main === module) {
+    const fs = require("fs"), path = require("path"), a = process.argv.slice(2);
+    const opt = (k, d) => (a.includes(k) ? a[a.indexOf(k) + 1] : d);
+    const pos = a.filter((x, i) => !x.startsWith("--") && (i === 0 || !["--site", "--sitefile"].includes(a[i - 1])));
+    const usage = () => { console.log("usage: node tm.js sitefile|check-mapping|validate|checksum … (see the top of tm.js)"); process.exit(2); };
+    if (pos.length < 2) usage();
+    const cmd = pos[0], site = opt("--site", "wexham"), j = (p) => JSON.parse(fs.readFileSync(p, "utf8"));
+    if (cmd === "checksum") { console.log(checksum(j(pos[1]))); process.exit(0); }
+    const R0 = pos[1];
+    const pack = { dictionary: j(path.join(R0, "engine-data", "data-dictionary.json")), site: j(path.join(R0, "site", site, "site.json")),
+      geometry: j(path.join(R0, "site", site, "geometry.json")), mapping: j(path.join(R0, "site", site, "data-mapping.json")), siteId: site };
+    if (cmd === "check-mapping") { const P = checkMapping(pack); console.log(P.length ? P.join("\n") : `The ${site} staffObservation mapping passes.`); process.exit(P.length ? 1 : 0); }
+    if (cmd === "sitefile") { process.stdout.write(JSON.stringify(buildSiteFile(pack), null, 1) + "\n"); process.exit(0); }
+    if (cmd === "validate") {
+      const sf = opt("--sitefile", null), siteFile = sf ? j(sf) : buildSiteFile(pack);
+      if (siteFile.format !== SITE_FORMAT) { console.error(`the site file's format should be ${SITE_FORMAT}`); process.exit(1); }
+      const reps = pos.slice(2).map((p) => {
+        let doc;
+        try { doc = j(p); } catch (e) { return { file: path.basename(p), ok: false, errors: [{ code: "unreadable", at: "", message: "can't read the file as JSON" }], warnings: [], summary: null }; }
+        return validate(doc, siteFile, path.basename(p));
+      });
+      if (a.includes("--json")) process.stdout.write(JSON.stringify(reps, null, 1) + "\n");
+      else for (const r of reps) {
+        console.log(`${r.file}: ${r.ok ? "accepted" : "REFUSED"} (${r.errors.length} error(s), ${r.warnings.length} warning(s))`);
+        for (const e of r.errors) console.log(`  error   ${e.message}`);
+        for (const w of r.warnings) console.log(`  warning ${w.message}`);
+        const s = r.summary;
+        if (s) console.log(`  ${s.intervals} intervals, ${s.patients} patients, ${s.events} events; observed ${fmtMs(s.observedSec * 1000)}, out of view ${fmtMs(s.unseenSec * 1000)}, paused ${fmtMs(s.pausedSec * 1000)}`);
+      }
+      process.exit(reps.every((r) => r.ok) ? 0 : 1);
+    }
+    usage();
+  }
+})(typeof globalThis !== "undefined" ? globalThis : this);</script>
+<script>/* Time & Motion app: the session core (no screen, no storage). Turns taps into an ed-tm/1 session, as defined in the
+   simulator project's data dictionary (staffObservation). Runs in the browser (window.TMCore) and in Node (tests).
+   Every change takes `now` (a Date) so tests can drive the clock. Times are written as local time with the UTC
+   offset and milliseconds, e.g. 2026-12-01T14:03:27.412+00:00. */
+(function (root) {
+  "use strict";
+  const pad = (n, w) => String(n).padStart(w || 2, "0");
+
+  /** A Date -> local ISO 8601 with milliseconds and the UTC offset in force at that instant. */
+  function iso(d) {
+    const off = -d.getTimezoneOffset(), sign = off >= 0 ? "+" : "-", a = Math.abs(off);
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}` +
+      `.${pad(d.getMilliseconds(), 3)}${sign}${pad(Math.floor(a / 60))}:${pad(a % 60)}`;
+  }
+  const ms = (s) => Date.parse(s);   // our own strings always parse; tm.js parseTime is the reference
+
+  function randomCode(prefix) {
+    const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", b = new Uint8Array(6);
+    (root.crypto || require("crypto").webcrypto).getRandomValues(b);
+    return (prefix || "TM") + "-" + Array.from(b, (x) => A[x % A.length]).join("");
+  }
+
+  /** A new session in state 'ready': the clock starts with the first activity tap. */
+  function create(header, site, appVersion, now) {
+    return {
+      id: header.code, rev: 0, status: "ready", created: iso(now), updated: iso(now), exportedAt: null,
+      appVersion, siteId: site.siteId, taxonomyVersion: Math.max(...site.taxonomyVersions),
+      session: Object.assign({ start: null, end: null }, header),
+      intervals: [], pauses: [], places: [], events: [], context: [], edits: [], notes: [],
+      resumeWith: null, clockFixes: 0,
+    };
+  }
+
+  function lastTime(s) {
+    let t = s.session.start ? ms(s.session.start) : -Infinity;
+    for (const r of s.intervals) t = Math.max(t, ms(r.start), r.end ? ms(r.end) : -Infinity);
+    for (const r of s.pauses) t = Math.max(t, ms(r.start), r.end ? ms(r.end) : -Infinity);
+    for (const r of s.places) if (r.time) t = Math.max(t, ms(r.time));
+    return t;
+  }
+  /** The tap's time; if the phone's clock has gone backwards, one millisecond after the last time instead. */
+  function stamp(s, now) {
+    const last = lastTime(s);
+    if (now.getTime() <= last) { s.clockFixes += 1; now = new Date(last + 1); }
+    return iso(now);
+  }
+  const open = (s) => { const r = s.intervals[s.intervals.length - 1]; return r && r.end === null ? r : null; };
+  const openPause = (s) => { const r = s.pauses[s.pauses.length - 1]; return r && r.end === null ? r : null; };
+  const current = (s) => open(s);
+
+  function startInterval(s, t, activity, extra) {
+    const r = { seq: s.intervals.length + 1, start: t, end: null, activity };
+    if (extra && extra.patient) r.patient = extra.patient;
+    if (extra && extra.screen) r.screen = extra.screen;
+    s.intervals.push(r);
+    return r;
+  }
+  const isComputer = (site, a) => !!(site.contract.activities.find((x) => x.code === a) || {}).computer;
+
+  /** Tap an activity. In 'ready' this starts the session. */
+  function setActivity(s, site, activity, now) {
+    if (s.status === "ended" || s.status === "paused") return false;
+    const extra = isComputer(site, activity) ? { screen: "seen" } : null;
+    if (s.status === "ready") {
+      const t = iso(now);
+      s.session.start = t; s.status = "running";
+      fixReadyPlaces(s);
+      startInterval(s, t, activity, extra);
+      return true;
+    }
+    const cur = open(s);
+    if (cur && cur.activity === activity) return false;
+    const t = stamp(s, now);
+    cur.end = t;
+    startInterval(s, t, activity, extra);
+    return true;
+  }
+
+  /** The 'screen not visible' toggle: splits the current computer interval at now. */
+  function setScreen(s, site, seen, now) {
+    const cur = open(s);
+    if (!cur || s.status !== "running" || !isComputer(site, cur.activity)) return false;
+    const want = seen ? "seen" : "not_seen";
+    if (cur.screen === want) return false;
+    const t = stamp(s, now);
+    cur.end = t;
+    startInterval(s, t, cur.activity, { patient: cur.patient, screen: want });
+    return true;
+  }
+
+  function setPlace(s, place, now) {
+    if (s.status === "ended") return false;
+    const last = s.places[s.places.length - 1];
+    if (last && last.place === place) return false;
+    // before the first activity tap, the place is recorded at the start (fixed up in setActivity's start time below)
+    const t = s.status === "ready" ? null : stamp(s, now);
+    s.places.push({ time: t, place });
+    return true;
+  }
+
+  function pause(s, now) {
+    if (s.status !== "running") return false;
+    const cur = open(s), t = stamp(s, now);
+    cur.end = t;
+    s.resumeWith = { activity: cur.activity, patient: cur.patient || null, screen: cur.screen || null };
+    s.pauses.push({ start: t, end: null });
+    s.status = "paused";
+    return true;
+  }
+  function resume(s, now) {
+    if (s.status !== "paused") return false;
+    const p = openPause(s), t = stamp(s, now);
+    p.end = t;
+    const w = s.resumeWith || { activity: "unseen" };
+    startInterval(s, t, w.activity, { patient: w.patient, screen: w.screen });
+    s.resumeWith = null; s.status = "running";
+    return true;
+  }
+  function end(s, now) {
+    if (s.status !== "running" && s.status !== "paused") return false;
+    const t = stamp(s, now);
+    const cur = open(s), p = openPause(s);
+    if (cur) cur.end = t;
+    if (p) p.end = t;
+    s.session.end = t; s.status = "ended"; s.resumeWith = null;
+    return true;
+  }
+
+  /** Places tapped before the first activity carry no time yet: give them the session start. */
+  function fixReadyPlaces(s) {
+    if (!s.session.start) return;
+    for (const p of s.places) if (p.time === null) p.time = s.session.start;
+    // keep only the last of several taps made before the start
+    const early = s.places.filter((p) => p.time === s.session.start);
+    if (early.length > 1) s.places = [early[early.length - 1]].concat(s.places.filter((p) => p.time !== s.session.start));
+  }
+
+  const clean = (o) => { const r = {}; for (const [k, v] of Object.entries(o)) if (v !== null && v !== undefined && v !== "") r[k] = v; return r; };
+
+  /** The ed-tm/1 document for an ended session, with its checksum (needs tm.js as TM). */
+  function exportDoc(s, TM) {
+    if (s.status !== "ended") throw new Error("end the session before exporting");
+    fixReadyPlaces(s);
+    const H = s.session;
+    const session = clean({ code: H.code, observer: H.observer, staffGroup: H.staffGroup, gradeBand: H.gradeBand, post: H.post,
+      zone: H.zone, shiftStart: H.shiftStart, shiftEnd: H.shiftEnd, start: H.start, end: H.end, consent: H.consent });
+    session.pilot = !!H.pilot;
+    const doc = {
+      format: "ed-tm/1", appVersion: s.appVersion, taxonomyVersion: s.taxonomyVersion, siteId: s.siteId, session,
+      intervals: s.intervals.map(clean), pauses: s.pauses.map(clean), places: s.places.map(clean), events: s.events.map(clean),
+      context: s.context.map(clean), edits: s.edits.map((e) => Object.assign({}, e)), notes: s.notes.map(clean),
+    };
+    doc.checksum = TM.checksum(doc);
+    return doc;
+  }
+  function fileName(doc, ext) {
+    const d = doc.session.start.slice(0, 10).replace(/-/g, "");
+    return `tm_${doc.session.code}_${d}.${ext || "json"}`;
+  }
+  /** The intervals as CSV, for checking by eye (the JSON is the record). */
+  function csv(doc) {
+    const q = (v) => { v = v === undefined || v === null ? "" : String(v); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
+    const lines = ["seq,start,end,seconds,activity,patient,screen"];
+    for (const r of doc.intervals) lines.push([r.seq, r.start, r.end, Math.round((ms(r.end) - ms(r.start)) / 1000), r.activity, r.patient, r.screen].map(q).join(","));
+    for (const p of doc.pauses) lines.push(["pause", p.start, p.end, Math.round((ms(p.end) - ms(p.start)) / 1000), "", "", ""].map(q).join(","));
+    return lines.join("\r\n") + "\r\n";
+  }
+
+  /** Seconds observed so far (intervals other than unseen), up to now. */
+  function observedSec(s, now) {
+    let t = 0;
+    for (const r of s.intervals) if (r.activity !== "unseen") t += (r.end ? ms(r.end) : now.getTime()) - ms(r.start);
+    return Math.max(0, Math.floor(t / 1000));
+  }
+
+  const TMCore = { iso, randomCode, create, setActivity, setScreen, setPlace, pause, resume, end, exportDoc, fileName, csv,
+    current, observedSec, isComputer, fixReadyPlaces };
+  if (typeof module !== "undefined" && module.exports) module.exports = TMCore; else root.TMCore = TMCore;
+})(typeof globalThis !== "undefined" ? globalThis : this);
+</script>
+<script>
+"use strict";
+/* Time & Motion app: phase 1 test build. Every tap is saved at once to IndexedDB, with a copy in localStorage.
+   Nothing is ever sent anywhere: export goes through the phone's share sheet, to wherever the observer chooses. */
+const APP_VERSION = "0.1.0-phase1";
+const DEMO_SITE = {"format":"ed-tm-site/1","siteId":"demo","siteName":"Demo site (invented, for testing)","taxonomyVersions":[1],"zones":[{"id":"zone-a","name":"Zone A","slot":null},{"id":"zone-b","name":"Zone B","slot":null}],"words":{},"gradeLabels":{"fy1":"FY1","st1_2":"FY2–ST2","st3":"ST3","st4plus":"ST4+","consultant":"Consultant","acp":"ACP","nurse":"Nurse","hca":"HCA","other":"Other"},"places":[{"id":"desk-a","label":"Zone A desk","kind":"desk","zone":"zone-a","x":0,"y":0,"confirm":false},{"id":"cub-a1","label":"Cubicle A1","kind":"cubicle","zone":"zone-a","x":4,"y":0,"confirm":false},{"id":"cub-a2","label":"Cubicle A2","kind":"cubicle","zone":"zone-a","x":8,"y":0,"confirm":false},{"id":"wait-a","label":"Zone A waiting","kind":"waiting","zone":"zone-a","x":0,"y":6,"confirm":false},{"id":"desk-b","label":"Zone B desk","kind":"desk","zone":"zone-b","x":20,"y":0,"confirm":false},{"id":"bay-b1","label":"Bay B1","kind":"bay","zone":"zone-b","x":24,"y":0,"confirm":false},{"id":"corridor","label":"Corridor","kind":"area","zone":null,"x":12,"y":3,"confirm":false},{"id":"elsewhere","label":"Elsewhere","kind":"offplan","zone":null,"x":null,"y":null,"confirm":false}],"bounds":{"xMin":0,"xMax":24,"yMin":0,"yMax":6},"outline":[],"contract":{"about":"Time & Motion phase 0 (24 Nov 2026, user): the contract between the Time & Motion app and the simulator. One observer shadows one member of staff and records a timeline of exclusive activities, location changes, point events and department context. One session = one JSON file in format ed-tm/1. The app writes it; tools/tm.py (Python, standard library) and tools/tm.js (JavaScript, for the app and Node) check it with identical verdicts; later estimators read it (phase 3). Raw session files stay on the observer's device (user, 18 Nov 2026): they are never seen or processed by AI. Nothing in a file may identify a person: no names of staff or patients, no hospital numbers, no bed-and-date combinations in notes. The activity list is a draft (taxonomy 1), to be confirmed by the user in the pilot; a new list means a new taxonomyVersion, and the site mapping says which versions it reads.","format":"ed-tm/1","taxonomyVersions":[1],"times":"ISO 8601 local time to the second with its UTC offset, e.g. 2026-12-01T14:03:27+00:00 (Z allowed for +00:00; up to 3 decimals of a second allowed). The offset makes durations right across clock changes.","file":{"about":"Top-level keys. All are required; an empty table is an empty list.","keys":["format","appVersion","taxonomyVersion","siteId","session","intervals","pauses","places","events","context","edits","notes","checksum"],"checksum":"\"sha256:\" + the hex SHA-256 of the file's canonical JSON with checksum removed: keys sorted at every level, no spaces (separators , and :), non-ASCII characters written as themselves (UTF-8). Every number in a file is an integer, so Python and JavaScript write the same text."},"session":{"about":"One object: who was observed, in which post, when.","fields":[{"name":"code","type":"id","required":true,"about":"a random session code (4–24 of A–Z, 0–9 and -), never a name or initials"},{"name":"observer","type":"id","required":true,"about":"the observer's code (same pattern)"},{"name":"staffGroup","type":"category","required":true,"values":["doctor","acp","nurse","hca","other"],"about":"version 1 observes doctors (and ACPs working as doctors); the others are allowed for later"},{"name":"gradeBand","type":"category","required":true,"values":["fy1","st1_2","st3","st4plus","consultant","acp","nurse","hca","other"],"about":"generic grade band; the site mapping turns local names (e.g. Red top) into these and these into the model's grades"},{"name":"post","type":"category","required":true,"values":["pool","pico","epic","majorsCons","alpha","resus","hub","paeds","utc","other"],"about":"the post held during the session, as the engine names its posts (the site's words say what each is called locally)"},{"name":"zone","type":"zone","required":false,"about":"the site zone (site.json zone id) the person mainly worked in; empty if mixed"},{"name":"shiftStart","type":"datetime","required":false,"about":"the person's rostered shift start"},{"name":"shiftEnd","type":"datetime","required":false,"about":"the person's rostered shift end"},{"name":"start","type":"datetime","required":true,"about":"observation start"},{"name":"end","type":"datetime","required":true,"about":"observation end"},{"name":"consent","type":"category","required":true,"values":["yes"],"about":"the observed person agreed before the session; a file without it is refused"},{"name":"pilot","type":"boolean","required":true,"about":"true for method-testing sessions, which estimators leave out by default"}]},"tables":{"intervals":{"about":"One row per stretch of one activity. Rows in seq order (1, 2, 3…), each start before its end. Intervals and pauses together tile the session exactly: the first begins at session.start, each next one begins where the last ended, the last ends at session.end.","fields":[{"name":"seq","type":"integer","required":true},{"name":"start","type":"datetime","required":true},{"name":"end","type":"datetime","required":true},{"name":"activity","type":"activity","required":true},{"name":"patient","type":"patientTag","required":false,"about":"A, B … Z, AA, AB …: the order patients were first met in this session; empty if none"},{"name":"screen","type":"category","required":false,"values":["seen","not_seen"],"about":"computer activities only: whether the observer could see what was on screen (the 'screen not visible' flag)"}]},"pauses":{"about":"The observer stopped observing (their own break, or a stop). Never part of any share or rate.","fields":[{"name":"start","type":"datetime","required":true},{"name":"end","type":"datetime","required":true}]},"places":{"about":"Where the observed person is, as a time series of changes (tapped on the floor plan), kept apart from the activity. Rows in time order. A place holds until the next row.","fields":[{"name":"time","type":"datetime","required":true},{"name":"place","type":"place","required":true,"about":"a place id from the site file (ed-tm-site/1)"}]},"events":{"about":"Point events laid over the timeline. Rows in time order.","fields":[{"name":"time","type":"datetime","required":true},{"name":"event","type":"event","required":true},{"name":"source","type":"category","required":false,"values":["nurse","doctor","hca","patient","relative","phone","bleep","epic","other"],"about":"who or what prompted it (interruptions; who helped or asked)"},{"name":"outcome","type":"category","required":false,"values":["switched","deferred","ignored"],"about":"interruptions: the observed person switched task, deferred it, or ignored it"},{"name":"grade","type":"category","required":false,"values":["fy1","st1_2","st3","st4plus","consultant","acp","nurse","hca","other"],"about":"help events: the other person's grade band, if known"},{"name":"activity","type":"activity","required":false,"about":"multitask_start: the second activity running alongside"},{"name":"patient","type":"patientTag","required":false}]},"context":{"about":"Department snapshots, prompted every 30 min; any field may be empty (null) if not known.","fields":[{"name":"time","type":"datetime","required":true},{"name":"waiting","type":"count","required":false,"about":"patients waiting to be seen in the observed person's zone (from the board)"},{"name":"doctorsOn","type":"count","required":false,"about":"doctors on duty in that zone"},{"name":"escalation","type":"category","required":false,"values":["yes","no"],"about":"whether the department was in escalation"}]},"edits":{"about":"The audit trail of every undo or correction made in the app. Not used by estimators.","fields":[{"name":"time","type":"datetime","required":true},{"name":"action","type":"category","required":true,"values":["undo","change","insert","delete"]},{"name":"table","type":"category","required":true,"values":["intervals","places","events","context","pauses","session"]},{"name":"before","type":"any","required":false},{"name":"after","type":"any","required":false}]},"notes":{"about":"Free text with a time. Never read by the estimators. Never names, patient details or bed-and-time combinations.","fields":[{"name":"time","type":"datetime","required":true},{"name":"text","type":"text","required":true,"about":"at most 500 characters"}]}},"activities":[{"code":"fetch","label":"Calling or walking a patient to a cubicle","patient":"expected","computer":false},{"code":"consult","label":"With a patient: history, examination, explanation","patient":"expected","computer":false},{"code":"procedure","label":"A practical task with a patient (cannula, ECG, plaster)","patient":"expected","computer":false},{"code":"notes","label":"Writing notes at a computer","patient":"optional","computer":true},{"code":"order","label":"Requesting tests or prescribing at a computer","patient":"optional","computer":true},{"code":"results","label":"Reviewing results or imaging","patient":"optional","computer":true},{"code":"discuss","label":"Clinical discussion with a colleague","patient":"optional","computer":false},{"code":"phone","label":"On the phone (referral, results, other)","patient":"optional","computer":false},{"code":"teach","label":"Supervising or teaching","patient":"optional","computer":false},{"code":"wait_cubicle","label":"Waiting for a free cubicle","patient":"optional","computer":false},{"code":"wait_computer","label":"Waiting for a free computer","patient":"optional","computer":false},{"code":"wait_senior","label":"Waiting for a senior","patient":"optional","computer":false},{"code":"wait_other","label":"Waiting for a patient, nurse or result","patient":"optional","computer":false},{"code":"walk","label":"Moving without a patient","patient":"none","computer":false},{"code":"handover","label":"Shift or board handover","patient":"none","computer":false},{"code":"crash","label":"Crash call or Resus team call","patient":"optional","computer":false},{"code":"admin","label":"Non-patient work (rota, email, forms)","patient":"none","computer":true},{"code":"break","label":"On a break","patient":"none","computer":false},{"code":"idle","label":"Nothing to do","patient":"none","computer":false},{"code":"unseen","label":"Out of the observer's view (session still running)","patient":"none","computer":false}],"events":[{"code":"interruption","label":"Interrupted","needs":["source","outcome"]},{"code":"help_asked","label":"Asked someone for help or advice","needs":[]},{"code":"help_given","label":"Was asked for help or advice","needs":[]},{"code":"multitask_start","label":"A second activity starts alongside the current one","needs":["activity"]},{"code":"multitask_end","label":"The second activity ends","needs":[]}],"modelStates":{"about":"The engine's doctor states (21-state tallies; 52-staff-log.js SL_DOC), parts of them that the mapping may name, and the engine's grades, so a mapping can be checked without the engine.","values":["cubicle","fetch","review","notesCubicle","desk","waitCubicle","waitDesk","waitSenior","discuss","triage","handover","eemac","break","waitPatient","task","crash","other","idle","walk","unobserved"],"grades":["Red","Purple","Grey","Turquoise"]},"siteFile":{"about":"What the app loads to know a site and the contract: made by tools/tm.py sitefile (or tm.js) from the site pack (site.json, geometry.json, data-mapping.json staffObservation) and this section, which it carries whole as 'contract'. Format ed-tm-site/1.","format":"ed-tm-site/1","keys":["format","siteId","siteName","taxonomyVersions","zones","words","gradeLabels","places","bounds","outline","contract"],"place":"{id, label, kind, zone (a site zone id or null), x, y (metres on the site plan; null for off-plan places), confirm (true where the label is Claude's guess, to check)}","placeKinds":["cubicle","bed","bay","desk","waiting","triage","room","imaging","toilet","entrance","lift","base","corner","area","offplan"],"outline":"a list of polygons for drawing the plan; empty until phase 2 (from claude/orange-sim/floor-plan-v0.2.json)"},"rules":["Errors (the file is refused): wrong format or taxonomy version; a missing key or required field; a value outside its list; a time that is not ISO 8601 with an offset; consent not yes; session end not after start; intervals out of seq order, empty, or not tiling the session with the pauses; anything timed outside the session; tables out of time order; a place the site file doesn't list (when a site file is given); screen on a non-computer activity; an event missing what it needs; a multitask_end with no open multitask_start; a non-integer or negative count; a note over 500 characters; a checksum that doesn't match.","Warnings (the file is accepted): a fetch, consult or procedure with no patient tag; a patient tag on a 'none' activity; patient tags not first met in order (A, B, C…); an interval over 4 h; more than 60 min without a context snapshot; an event during a pause; a multitask still open at the end; no place recorded in the first minute."]}};
+const C = window.TMCore, TMv = window.TM;
+const $ = (sel) => document.querySelector(sel);
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const hms = (sec) => { sec = Math.max(0, Math.floor(sec)); return `${Math.floor(sec / 3600)}:${String(Math.floor(sec / 60) % 60).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`; };
+const clock = (isoStr) => isoStr ? isoStr.slice(11, 19) : "";
+const when = (isoStr) => isoStr ? `${isoStr.slice(8, 10)}/${isoStr.slice(5, 7)} ${isoStr.slice(11, 16)}` : "never";
+
+/* ---------------------------------------------------------------- storage */
+const Store = {
+  db: null, idbOk: false, saves: 0, lastSave: null, lastError: null, chain: Promise.resolve(),
+  async open() {
+    try {
+      this.db = await new Promise((res, rej) => {
+        const r = indexedDB.open("tm", 1);
+        r.onupgradeneeded = () => { const d = r.result; d.createObjectStore("sessions", { keyPath: "id" }); d.createObjectStore("kv"); };
+        r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); r.onblocked = () => rej(new Error("blocked"));
+      });
+      this.idbOk = true;
+    } catch (e) { this.idbOk = false; this.lastError = "IndexedDB unavailable: " + e.message; }
+  },
+  tx(store, mode, fn) {
+    return new Promise((res, rej) => { const t = this.db.transaction(store, mode), s = t.objectStore(store), r = fn(s);
+      t.oncomplete = () => res(r && r.result); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); });
+  },
+  lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { this.lastError = "localStorage: " + e.message; return false; } },
+  lsGet(k) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } },
+  /** Save a session: localStorage first (synchronous), then IndexedDB, one write after another. */
+  saveSession(s) {
+    s.rev += 1; s.updated = C.iso(new Date());
+    const copy = JSON.parse(JSON.stringify(s));
+    this.lsSet("tm.s." + s.id, copy);
+    this.chain = this.chain.then(async () => {
+      if (this.idbOk) { try { await this.tx("sessions", "readwrite", (st) => st.put(copy)); } catch (e) { this.lastError = "IndexedDB write: " + e.message; } }
+      this.saves += 1; this.lastSave = copy.updated;
+    });
+    return this.chain;
+  },
+  async loadSessions() {
+    const by = {};
+    if (this.idbOk) { try { for (const s of (await this.tx("sessions", "readonly", (st) => st.getAll())) || []) by[s.id] = s; } catch (e) { this.lastError = "IndexedDB read: " + e.message; } }
+    try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith("tm.s.")) { const s = this.lsGet(k); if (s && (!by[s.id] || s.rev > by[s.id].rev)) by[s.id] = s; } } } catch (e) { /* none */ }
+    return by;
+  },
+  async deleteSession(id) {
+    try { localStorage.removeItem("tm.s." + id); } catch (e) { /* none */ }
+    if (this.idbOk) await this.tx("sessions", "readwrite", (st) => st.delete(id));
+  },
+  async kvSet(k, v) { this.lsSet("tm.kv." + k, v); if (this.idbOk) { try { await this.tx("kv", "readwrite", (st) => st.put(v, k)); } catch (e) { /* mirror holds it */ } } },
+  async kvGet(k) {
+    if (this.idbOk) { try { const v = await this.tx("kv", "readonly", (st) => st.get(k)); if (v !== undefined) return v; } catch (e) { /* fall through */ } }
+    return this.lsGet("tm.kv." + k);
+  },
+};
+
+/* ---------------------------------------------------------------- app state */
+const A = { view: "home", sessions: {}, cur: null, sites: { demo: DEMO_SITE }, siteId: "demo", persisted: null, estimate: null,
+  wake: null, wakeState: "off", lastExport: null, armed: null, report: null, tick: null };
+const site = () => A.sites[A.siteId] || DEMO_SITE;
+const siteFor = (s) => A.sites[s.siteId] || null;
+const standalone = () => window.navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+
+async function boot() {
+  await Store.open();
+  const loaded = await Store.kvGet("site"); if (loaded && loaded.siteId) A.sites[loaded.siteId] = loaded;
+  A.siteId = (await Store.kvGet("siteChoice")) || "demo"; if (!A.sites[A.siteId]) A.siteId = "demo";
+  A.lastExport = await Store.kvGet("lastExport");
+  A.sessions = await Store.loadSessions();
+  const live = Object.values(A.sessions).find((s) => s.status === "running" || s.status === "paused" || s.status === "ready");
+  if (live) { A.cur = live.id; A.view = "session"; }
+  await refreshStorageInfo();
+  if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) navigator.serviceWorker.register("sw.js").catch(() => {});
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { render(); wakeUp(); } });
+  render();
+}
+async function refreshStorageInfo() {
+  try { A.persisted = navigator.storage && navigator.storage.persisted ? await navigator.storage.persisted() : null; } catch (e) { A.persisted = null; }
+  try { A.estimate = navigator.storage && navigator.storage.estimate ? await navigator.storage.estimate() : null; } catch (e) { A.estimate = null; }
+}
+async function askPersist() {
+  try { if (navigator.storage && navigator.storage.persist) A.persisted = await navigator.storage.persist(); } catch (e) { /* not offered */ }
+}
+
+/* ---------------------------------------------------------------- screen wake lock */
+async function wakeUp() {
+  const s = A.sessions[A.cur];
+  if (A.view !== "session" || !s || s.status === "ended") return wakeDown();
+  if (!("wakeLock" in navigator)) { A.wakeState = "not supported"; return paintWake(); }
+  if (A.wake && !A.wake.released) return;
+  try { A.wake = await navigator.wakeLock.request("screen"); A.wakeState = "on"; A.wake.addEventListener("release", () => { A.wakeState = "off"; paintWake(); }); }
+  catch (e) { A.wakeState = "refused"; }
+  paintWake();
+}
+function wakeDown() { if (A.wake && !A.wake.released) A.wake.release().catch(() => {}); A.wake = null; A.wakeState = "off"; }
+function paintWake() { const el = $("#wake"); if (el) el.textContent = "Screen kept on: " + A.wakeState; }
+
+/* ---------------------------------------------------------------- rendering */
+const GROUPS = [
+  ["With a patient", "--g-pt", ["fetch", "consult", "procedure"]],
+  ["At a computer", "--g-pc", ["notes", "order", "results", "admin"]],
+  ["Talking", "--g-talk", ["discuss", "phone", "teach", "handover"]],
+  ["Waiting", "--g-wait", ["wait_cubicle", "wait_computer", "wait_senior", "wait_other"]],
+  ["Other", "--g-oth", ["walk", "crash", "break", "idle", "unseen"]],
+];
+const SHORT = { fetch: "Fetch patient", consult: "Consult", procedure: "Procedure", notes: "Notes", order: "Order / prescribe", results: "Results",
+  admin: "Admin", discuss: "Discuss", phone: "Phone", teach: "Teach / supervise", handover: "Handover", wait_cubicle: "Wait: cubicle",
+  wait_computer: "Wait: computer", wait_senior: "Wait: senior", wait_other: "Wait: other", walk: "Walk", crash: "Crash / Resus call",
+  break: "Break", idle: "Idle", unseen: "Out of view" };
+const actLabel = (code) => SHORT[code] || code;
+
+function render() {
+  clearInterval(A.tick); A.tick = null;
+  const v = A.view;
+  if (v === "home") renderHome(); else if (v === "new") renderNew(); else if (v === "session") renderSession(); else if (v === "export") renderExport();
+  if (v === "session") { A.tick = setInterval(paintTimers, 500); wakeUp(); } else wakeDown();
+}
+
+function renderHome() {
+  const all = Object.values(A.sessions).sort((a, b) => (b.created > a.created ? 1 : -1));
+  const unexported = all.filter((s) => s.status === "ended" && !s.exportedAt).length;
+  const live = all.filter((s) => s.status !== "ended").length;
+  const st = site();
+  $("#app").innerHTML = `
+    <h1>Time &amp; Motion</h1>
+    <div class="muted">Test build ${APP_VERSION} · site: ${esc(st.siteName)}</div>
+    ${standalone() ? "" : `<div class="banner warn">You're in a browser tab, not the home-screen app. On an iPhone the two keep separate storage, so sessions made here won't appear in the home-screen app. For the test, use the home-screen icon.</div>`}
+    ${!Store.idbOk ? `<div class="banner bad">IndexedDB isn't available here, so sessions are kept in the backup copy (localStorage) only. ${esc(Store.lastError || "")}</div>` : ""}
+    ${unexported ? `<div class="banner warn">${unexported} ended session(s) not yet exported.</div>` : ""}
+    <div class="card">
+      <div class="row spread"><span>Last export</span><strong>${esc(when(A.lastExport))}</strong></div>
+      <div class="row spread"><span>Storage kept (persistent)</span><strong>${A.persisted === true ? "yes" : A.persisted === false ? "not granted" : "unknown"}</strong></div>
+    </div>
+    <button class="primary wide" id="new" ${live ? "disabled" : ""}>New session</button>
+    ${live ? `<div class="muted small">A session is open; end it before starting another.</div>` : ""}
+    <h2>Sessions on this phone</h2>
+    <div class="card list">${all.length ? all.map((s) => `
+      <div class="item">
+        <div class="row spread"><strong>${esc(s.id)}</strong><span class="chip">${esc(s.status === "ended" ? (s.exportedAt ? "exported" : "not exported") : s.status)}</span></div>
+        <div class="muted small">${esc(when(s.session.start || s.created))} · ${esc(s.session.gradeBand)} · ${esc(s.session.post)} · ${s.intervals.length} intervals · observed ${hms(C.observedSec(s, new Date()))}</div>
+        <div class="row" style="margin-top:6px">
+          ${s.status !== "ended" ? `<button data-open="${esc(s.id)}">Open</button>` : `<button data-export="${esc(s.id)}">Export</button>`}
+          ${s.status === "ended" || s.status === "ready" ? `<button class="${A.armed === s.id ? "armed" : "danger"}" data-del="${esc(s.id)}">${A.armed === s.id ? (s.exportedAt || s.status === "ready" ? "Tap again to delete" : "Not exported! Tap again to delete") : "Delete"}</button>` : ""}
+        </div>
+      </div>`).join("") : `<div class="muted">None yet.</div>`}</div>
+    <h2>Site file</h2>
+    <div class="card">
+      <div class="muted small">The site file gives the place list and the contract (ed-tm/1). The demo site is invented. To use a real site, load its file (e.g. tm-site-wexham.json) from Files; it stays on this phone.</div>
+      <div class="row" style="margin-top:8px">
+        <select id="sitepick">${Object.values(A.sites).map((x) => `<option value="${esc(x.siteId)}" ${x.siteId === A.siteId ? "selected" : ""}>${esc(x.siteName)}</option>`).join("")}</select>
+      </div>
+      <div class="row" style="margin-top:8px"><button id="loadsite">Load site file…</button><input type="file" id="sitefile" accept=".json,application/json" hidden></div>
+    </div>
+    <h2>For the test</h2>
+    <div class="card small">
+      <div>Home-screen app: <strong>${standalone() ? "yes" : "no"}</strong></div>
+      <div>Saves this run: ${Store.saves} · last save ${esc(clock(Store.lastSave)) || "–"}</div>
+      <div>IndexedDB: ${Store.idbOk ? "yes" : "no"} · screen wake lock: ${"wakeLock" in navigator ? "offered" : "not offered"} · share files: ${navigator.canShare ? "offered" : "not offered"}</div>
+      <div>Storage used: ${A.estimate && A.estimate.usage != null ? Math.round(A.estimate.usage / 1024) + " KB" : "unknown"}</div>
+      ${Store.lastError ? `<div class="muted">Last storage problem: ${esc(Store.lastError)}</div>` : ""}
+      <div class="row" style="margin-top:8px"><button id="persist">Ask to keep storage</button><button id="update">Check for update</button></div>
+    </div>`;
+  $("#new").onclick = async () => { await askPersist(); A.view = "new"; render(); };
+  document.querySelectorAll("[data-open]").forEach((b) => (b.onclick = () => { A.cur = b.dataset.open; A.view = "session"; render(); }));
+  document.querySelectorAll("[data-export]").forEach((b) => (b.onclick = () => { A.cur = b.dataset.export; A.view = "export"; A.report = null; render(); }));
+  document.querySelectorAll("[data-del]").forEach((b) => (b.onclick = async () => {
+    const id = b.dataset.del;
+    if (A.armed !== id) { A.armed = id; render(); setTimeout(() => { if (A.armed === id) { A.armed = null; if (A.view === "home") render(); } }, 4000); return; }
+    A.armed = null; await Store.deleteSession(id); delete A.sessions[id]; render();
+  }));
+  $("#sitepick").onchange = async (e) => { A.siteId = e.target.value; await Store.kvSet("siteChoice", A.siteId); render(); };
+  $("#loadsite").onclick = () => $("#sitefile").click();
+  $("#sitefile").onchange = async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const j = JSON.parse(await f.text());
+      if (j.format !== TMv.SITE_FORMAT || !j.contract || !Array.isArray(j.places)) throw new Error("this isn't an ed-tm-site/1 file");
+      A.sites[j.siteId] = j; A.siteId = j.siteId; await Store.kvSet("site", j); await Store.kvSet("siteChoice", j.siteId);
+      alertBanner(`Loaded ${j.siteName}: ${j.places.length} places.`, "ok");
+    } catch (err) { alertBanner("Couldn't load the site file: " + err.message, "bad"); }
+  };
+  $("#persist").onclick = async () => { await askPersist(); await refreshStorageInfo(); render(); };
+  $("#update").onclick = async () => {
+    try { const r = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); if (r) await r.update(); } catch (e) { /* offline */ }
+    location.reload();
+  };
+}
+function alertBanner(msg, kind) { render(); const d = document.createElement("div"); d.className = "banner " + kind; d.textContent = msg; $("#app").prepend(d); }
+
+function renderNew() {
+  const st = site(), so = st.contract, F = (n) => so.session.fields.find((f) => f.name === n);
+  const opts = (vals, sel, lab) => vals.map((v) => `<option value="${esc(v)}" ${v === sel ? "selected" : ""}>${esc(lab ? lab(v) : v)}</option>`).join("");
+  $("#app").innerHTML = `
+    <h1>New session</h1>
+    <div class="muted small">Site: ${esc(st.siteName)}. No names: codes only.</div>
+    <label for="code">Session code</label>
+    <div class="row"><input type="text" id="code" value="${esc(C.randomCode("TM"))}" autocapitalize="characters" style="flex:1"><button id="regen">New code</button></div>
+    <label for="observer">Your observer code</label>
+    <input type="text" id="observer" value="${esc(Store.lsGet("tm.kv.observer") || "OBS-1")}" autocapitalize="characters">
+    <label for="staffGroup">Staff group</label><select id="staffGroup">${opts(F("staffGroup").values, "doctor")}</select>
+    <label for="gradeBand">Grade</label><select id="gradeBand">${opts(F("gradeBand").values, "st1_2", (v) => (st.gradeLabels && st.gradeLabels[v]) || v)}</select>
+    <label for="post">Post</label><select id="post">${opts(F("post").values, "pool")}</select>
+    <label for="zone">Main zone</label><select id="zone"><option value="">Mixed / not one zone</option>${st.zones.map((z) => `<option value="${esc(z.id)}">${esc(z.name)}</option>`).join("")}</select>
+    <div class="row"><div style="flex:1"><label for="shiftStart">Shift start (optional)</label><input type="time" id="shiftStart"></div>
+      <div style="flex:1"><label for="shiftEnd">Shift end (optional)</label><input type="time" id="shiftEnd"></div></div>
+    <label class="check"><input type="checkbox" id="consent">The doctor has agreed to be observed</label>
+    <label class="check"><input type="checkbox" id="pilot" checked>Pilot / method-testing session</label>
+    <div id="formerr"></div>
+    <div class="bar"><button id="cancel">Cancel</button><button class="primary" id="ready">Ready</button></div>
+    <div class="muted small" style="margin-top:8px">The clock starts when you tap the first activity.</div>`;
+  $("#regen").onclick = () => { $("#code").value = C.randomCode("TM"); };
+  $("#cancel").onclick = () => { A.view = "home"; render(); };
+  $("#ready").onclick = async () => {
+    const code = $("#code").value.trim().toUpperCase(), observer = $("#observer").value.trim().toUpperCase();
+    const errs = [];
+    if (!/^[A-Z0-9-]{4,24}$/.test(code)) errs.push("Session code: 4–24 of A–Z, 0–9 and -.");
+    if (A.sessions[code]) errs.push("That session code is already on this phone.");
+    if (!/^[A-Z0-9-]{4,24}$/.test(observer)) errs.push("Observer code: 4–24 of A–Z, 0–9 and -.");
+    if (!$("#consent").checked) errs.push("A session can't start without the doctor's agreement.");
+    if (errs.length) { $("#formerr").innerHTML = `<div class="banner bad">${errs.map(esc).join("<br>")}</div>`; return; }
+    const now = new Date(), at = (hhmm, ref) => { if (!hhmm) return null; const [h, m] = hhmm.split(":").map(Number); const d = new Date(ref || now); d.setHours(h, m, 0, 0); return d; };
+    const ss = at($("#shiftStart").value), se0 = at($("#shiftEnd").value, ss || now);
+    const se = se0 && ss && se0 <= ss ? new Date(se0.getTime() + 86400000) : se0;
+    const header = { code, observer, staffGroup: $("#staffGroup").value, gradeBand: $("#gradeBand").value, post: $("#post").value,
+      zone: $("#zone").value || null, shiftStart: ss ? C.iso(ss) : null, shiftEnd: se ? C.iso(se) : null, consent: "yes", pilot: $("#pilot").checked };
+    Store.lsSet("tm.kv.observer", observer);
+    const s = C.create(header, site(), APP_VERSION, now);
+    A.sessions[s.id] = s; A.cur = s.id; await Store.saveSession(s);
+    A.view = "session"; render();
+  };
+}
+
+function renderSession() {
+  const s = A.sessions[A.cur]; if (!s) { A.view = "home"; return render(); }
+  const st = siteFor(s) || site(), so = st.contract, cur = C.current(s);
+  const known = new Set(GROUPS.flatMap((g) => g[2])), extra = so.activities.map((a) => a.code).filter((c) => !known.has(c));
+  const groups = GROUPS.concat(extra.length ? [["More", "--g-oth", extra]] : []);
+  const label = (c) => (so.activities.find((a) => a.code === c) || {}).label || c;
+  const lastPlace = s.places.length ? s.places[s.places.length - 1].place : null;
+  const recent = []; for (let i = s.places.length - 1; i >= 0 && recent.length < 5; i--) if (!recent.includes(s.places[i].place)) recent.push(s.places[i].place);
+  const placeName = (id) => (st.places.find((p) => p.id === id) || {}).label || id;
+  const computer = cur && C.isComputer(st, cur.activity);
+  const status = s.status === "ready" ? "Ready: tap the first activity to start the clock" : s.status === "paused" ? "PAUSED (time not observed)" : "Running";
+  const zones = {}; for (const p of st.places) (zones[p.zone || "_"] = zones[p.zone || "_"] || []).push(p);
+  const zname = (z) => z === "_" ? "Shared / no zone" : ((st.zones.find((x) => x.id === z) || {}).name || z);
+  $("#app").innerHTML = `
+    <div class="now">
+      <div class="row spread"><span class="small"><strong>${esc(s.id)}</strong> · ${esc(status)}</span><button id="home" style="min-height:36px;padding:4px 10px">Home</button></div>
+      <div class="act">${s.status === "paused" ? "Paused" : cur ? esc(actLabel(cur.activity)) : "–"}${cur && cur.screen === "not_seen" ? ' <span class="chip">screen not seen</span>' : ""}</div>
+      <div class="row spread"><span class="timer" id="t-cur">0:00:00</span><span class="small muted">observed <span id="t-obs">0:00:00</span></span></div>
+      <div class="small muted">Place: ${esc(lastPlace ? placeName(lastPlace) : "not set")} · <span id="wake">Screen kept on: ${esc(A.wakeState)}</span></div>
+    </div>
+    ${computer && s.status === "running" ? `<button class="wide" id="screen" style="margin-top:8px">${cur.screen === "not_seen" ? "Screen visible again" : "Can't see the screen"}</button>` : ""}
+    ${groups.map(([g, col, codes]) => `<div class="grp">${esc(g)}</div><div class="grid">${codes.map((c) =>
+      `<button class="act-btn ${cur && cur.activity === c && s.status === "running" ? "on" : ""}" style="--gc:var(${col})" data-act="${esc(c)}" title="${esc(label(c))}" ${s.status === "paused" ? "disabled" : ""}>${esc(actLabel(c))}</button>`).join("")}</div>`).join("")}
+    <div class="grp">Place</div>
+    <div class="places">${recent.map((p) => `<button data-place="${esc(p)}" ${p === lastPlace ? 'class="primary"' : ""}>${esc(placeName(p))}</button>`).join("")}</div>
+    <select id="placepick" style="margin-top:6px"><option value="">Choose a place…</option>${Object.keys(zones).map((z) =>
+      `<optgroup label="${esc(zname(z))}">${zones[z].map((p) => `<option value="${esc(p.id)}">${esc(p.label)}${p.confirm ? " (?)" : ""}</option>`).join("")}</optgroup>`).join("")}</select>
+    <div class="bar">
+      <button id="pause" ${s.status === "ready" ? "disabled" : ""}>${s.status === "paused" ? "Resume" : "Pause"}</button>
+      <button id="end" class="${A.armed === "end" ? "armed" : "danger"}" ${s.status === "ready" ? "disabled" : ""}>${A.armed === "end" ? "Tap again to end" : "End session"}</button>
+    </div>
+    <h2>Recent</h2>
+    <div class="card tl">${s.intervals.slice(-8).reverse().map((r) => `<div>${esc(clock(r.start))}–${esc(r.end ? clock(r.end) : "now    ")} ${esc(actLabel(r.activity))}${r.screen === "not_seen" ? " (screen not seen)" : ""}</div>`).join("") || '<span class="muted">Nothing yet.</span>'}
+      ${s.pauses.length ? `<div class="muted">${s.pauses.length} pause(s)</div>` : ""}</div>
+    ${s.clockFixes ? `<div class="banner warn">The phone's clock went backwards ${s.clockFixes} time(s); those taps were placed just after the one before.</div>` : ""}`;
+  paintTimers();
+  const save = async () => { await Store.saveSession(s); render(); };
+  document.querySelectorAll("[data-act]").forEach((b) => (b.onclick = () => { if (C.setActivity(s, st, b.dataset.act, new Date())) save(); }));
+  document.querySelectorAll("[data-place]").forEach((b) => (b.onclick = () => { if (C.setPlace(s, b.dataset.place, new Date())) save(); }));
+  $("#placepick").onchange = (e) => { if (e.target.value && C.setPlace(s, e.target.value, new Date())) save(); };
+  if ($("#screen")) $("#screen").onclick = () => { if (C.setScreen(s, st, cur.screen === "not_seen", new Date())) save(); };
+  $("#pause").onclick = () => { if (s.status === "paused" ? C.resume(s, new Date()) : C.pause(s, new Date())) save(); };
+  $("#end").onclick = () => {
+    if (A.armed !== "end") { A.armed = "end"; render(); setTimeout(() => { if (A.armed === "end") { A.armed = null; if (A.view === "session") render(); } }, 4000); return; }
+    A.armed = null;
+    if (C.end(s, new Date())) { Store.saveSession(s).then(() => { A.view = "export"; A.report = null; render(); }); }
+  };
+  $("#home").onclick = () => { A.view = "home"; render(); };
+}
+function paintTimers() {
+  const s = A.sessions[A.cur]; if (!s) return;
+  const now = new Date(), cur = C.current(s), p = s.pauses[s.pauses.length - 1];
+  const from = s.status === "paused" && p ? p.start : cur ? cur.start : null;
+  const a = $("#t-cur"), b = $("#t-obs");
+  if (a) a.textContent = from ? hms((now - Date.parse(from)) / 1000) : "0:00:00";
+  if (b) b.textContent = hms(C.observedSec(s, now));
+}
+
+function renderExport() {
+  const s = A.sessions[A.cur]; if (!s) { A.view = "home"; return render(); }
+  const st = siteFor(s);
+  let doc = null, rep = null, err = null;
+  try { doc = C.exportDoc(s, TMv); rep = st ? TMv.validate(JSON.parse(JSON.stringify(doc)), st, C.fileName(doc)) : null; } catch (e) { err = e.message; }
+  const lines = rep ? [`${rep.ok ? "Accepted" : "REFUSED"}: ${rep.errors.length} error(s), ${rep.warnings.length} warning(s)`]
+    .concat(rep.errors.map((e) => "error   " + e.message), rep.warnings.map((w) => "warning " + w.message),
+      rep.summary ? [`${rep.summary.intervals} intervals; observed ${hms(rep.summary.observedSec)}, out of view ${hms(rep.summary.unseenSec)}, paused ${hms(rep.summary.pausedSec)}`] : []) : [];
+  $("#app").innerHTML = `
+    <h1>Export ${esc(s.id)}</h1>
+    ${err ? `<div class="banner bad">${esc(err)}</div>` : ""}
+    ${!st ? `<div class="banner warn">The site file for "${esc(s.siteId)}" isn't loaded, so the file can't be checked here.</div>` : ""}
+    ${rep ? `<div class="banner ${rep.ok ? "ok" : "bad"}"><strong>Checked with the contract's validator (tm.js).</strong></div><div class="card"><pre class="rep">${esc(lines.join("\n"))}</pre></div>` : ""}
+    <div class="muted small">File: ${doc ? esc(C.fileName(doc)) : ""}. Saving it goes through the share sheet: choose "Save to Files" (or wherever you've agreed with IG). Nothing is sent by the app.</div>
+    <div class="bar"><button class="primary" id="sj" ${doc ? "" : "disabled"}>Share JSON (the record)</button><button id="sc" ${doc ? "" : "disabled"}>Share CSV (to check by eye)</button></div>
+    <div id="exmsg"></div>
+    <button class="wide" id="home" style="margin-top:14px">Home</button>
+    <div class="muted small" style="margin-top:8px">Exported: ${esc(when(s.exportedAt))}</div>`;
+  $("#home").onclick = () => { A.view = "home"; render(); };
+  const go = async (kind) => {
+    const text = kind === "csv" ? C.csv(doc) : JSON.stringify(doc, null, 1), name = C.fileName(doc, kind);
+    const done = await shareOrDownload(text, name, kind === "csv" ? "text/csv" : "application/json");
+    if (done && kind === "json") { s.exportedAt = C.iso(new Date()); A.lastExport = s.exportedAt; await Store.kvSet("lastExport", A.lastExport); await Store.saveSession(s); render(); }
+    if (done === false) $("#exmsg").innerHTML = `<div class="banner warn">Not saved (the share sheet was closed).</div>`;
+  };
+  if (doc) { $("#sj").onclick = () => go("json"); $("#sc").onclick = () => go("csv"); }
+}
+/** true = shared or downloaded, false = cancelled. */
+async function shareOrDownload(text, name, type) {
+  const file = new File([text], name, { type });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file] }); return true; }
+    catch (e) { if (e && e.name === "AbortError") return false; }
+  }
+  const url = URL.createObjectURL(file), a = document.createElement("a");
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+  return true;
+}
+
+boot().catch((e) => { $("#app").innerHTML = `<div class="banner bad">The app couldn't start: ${esc(e.message)}</div>`; });
+</script>
+</body>
+</html>
