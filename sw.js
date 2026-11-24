@@ -1,6 +1,6 @@
 /* Time & Motion service worker: keeps the app's own files on the phone so it opens with no signal.
    It caches only the app (never session data, which lives in IndexedDB). Bump VERSION with every release. */
-const VERSION = "tm-0.1.1-phase1";
+const VERSION = "tm-0.2.0-phase2";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-180.png", "./icon-512.png"];
 // Install fetches past the browser's HTTP cache (GitHub Pages lets browsers keep files ~10 min), so an update gets the new files.
 self.addEventListener("install", (e) => {

@@ -13,63 +13,74 @@
 <link rel="icon" type="image/png" href="icon-180.png">
 <title>Time &amp; Motion</title>
 <style>
-/* System fonts only, nothing loaded from elsewhere. Large targets for one-handed use. */
+/* System fonts only, nothing loaded from elsewhere. One-handed use: the session screen fits an iPhone without scrolling. */
 :root { --bg:#f2f4f6; --card:#fff; --ink:#14202b; --muted:#5b6875; --line:#d3dae1; --acc:#0b6e8a; --acc-ink:#fff;
   --warn:#9a5b00; --warn-bg:#fff3dc; --bad:#a3283c; --bad-bg:#fde8ec; --ok:#24783e; --ok-bg:#e3f4e8; --now:#0b6e8a; --now-bg:#e1f1f6;
-  --g-pt:#2b62c4; --g-pc:#0d7c87; --g-talk:#5b7f1d; --g-wait:#b4306a; --g-oth:#6d7884; }
+  --g-pt:#2b62c4; --g-pc:#0d7c87; --g-talk:#5b7f1d; --g-wait:#b4306a; --g-oth:#6d7884; --ev-int:#c0392b; --ev-help:#2b62c4; --ev-mt:#2f8a46; }
 @media (prefers-color-scheme: dark) { :root { --bg:#0d141a; --card:#16212b; --ink:#e6ecf1; --muted:#9aa8b5; --line:#2a3946;
   --acc:#3fb2d1; --acc-ink:#06232c; --warn:#f0b54a; --warn-bg:#33270f; --bad:#f07a8c; --bad-bg:#3a1820; --ok:#6cd08a; --ok-bg:#12301c;
-  --now:#3fb2d1; --now-bg:#0f2c36; --g-pt:#7aa5f0; --g-pc:#45c0c9; --g-talk:#a3cc6a; --g-wait:#e8709f; --g-oth:#a3afba; } }
+  --now:#3fb2d1; --now-bg:#0f2c36; --g-pt:#7aa5f0; --g-pc:#45c0c9; --g-talk:#a3cc6a; --g-wait:#e8709f; --g-oth:#a3afba; --ev-int:#f07a6c; --ev-help:#7aa5f0; --ev-mt:#6cd08a; } }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { margin:0; background:var(--bg); color:var(--ink); font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
-body { padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
+html, body { margin:0; background:var(--bg); color:var(--ink); font: 16px/1.35 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+body { padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); }
 main { max-width: 640px; margin: 0 auto; }
-h1 { font-size: 22px; margin: 4px 0 10px; } h2 { font-size: 17px; margin: 18px 0 8px; }
+h1 { font-size: 22px; margin: 4px 0 10px; } h2 { font-size: 17px; margin: 16px 0 8px; } h3 { font-size: 15px; margin: 12px 0 6px; }
 .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px; margin:10px 0; }
 .muted { color:var(--muted); font-size:14px; } .small { font-size:13px; }
-.row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-.spread { justify-content:space-between; }
-button, select, input { font:inherit; color:inherit; }
-button { min-height:48px; padding:8px 14px; border-radius:10px; border:1px solid var(--line); background:var(--card); font-weight:600; cursor:pointer; touch-action:manipulation; }
-button.primary { background:var(--acc); color:var(--acc-ink); border-color:var(--acc); }
-button.danger { color:var(--bad); border-color:var(--bad); }
-button.armed { background:var(--bad); color:#fff; border-color:var(--bad); }
-button:disabled { opacity:.45; }
-button.wide { width:100%; }
+.row { display:flex; gap:6px; align-items:center; flex-wrap:wrap; } .spread { justify-content:space-between; } .nowrap { flex-wrap:nowrap; }
+button, select, input, textarea { font:inherit; color:inherit; }
+button { min-height:44px; padding:6px 10px; border-radius:10px; border:1px solid var(--line); background:var(--card); font-weight:600; cursor:pointer; touch-action:manipulation; }
+button.primary, button.on { background:var(--acc); color:var(--acc-ink); border-color:var(--acc); }
+button.danger { color:var(--bad); border-color:var(--bad); } button.armed { background:var(--bad); color:#fff; border-color:var(--bad); }
+button:disabled { opacity:.4; } button.wide { width:100%; }
 label { display:block; margin:10px 0 4px; font-weight:600; font-size:15px; }
-select, input[type=text], input[type=time] { width:100%; min-height:48px; padding:8px 10px; border:1px solid var(--line); border-radius:10px; background:var(--card); }
+select, input[type=text], input[type=time], textarea { width:100%; min-height:44px; padding:8px 10px; border:1px solid var(--line); border-radius:10px; background:var(--card); }
 input[type=checkbox] { width:26px; height:26px; vertical-align:middle; margin-right:8px; }
 .check { display:flex; align-items:center; font-weight:600; margin:12px 0; }
-.banner { border-radius:10px; padding:10px 12px; margin:10px 0; font-size:15px; }
+.banner { border-radius:10px; padding:8px 12px; margin:8px 0; font-size:15px; }
 .banner.warn { background:var(--warn-bg); color:var(--warn); } .banner.bad { background:var(--bad-bg); color:var(--bad); } .banner.ok { background:var(--ok-bg); color:var(--ok); }
-.chip { display:inline-block; padding:2px 8px; border-radius:99px; font-size:12px; font-weight:700; border:1px solid currentColor; }
+.chip { display:inline-block; padding:1px 8px; border-radius:99px; font-size:12px; font-weight:700; border:1px solid currentColor; }
 .list .item { padding:10px 0; border-top:1px solid var(--line); } .list .item:first-child { border-top:0; }
 /* session screen */
-.now { background:var(--now-bg); border:2px solid var(--now); border-radius:14px; padding:12px; position:sticky; top:max(4px, env(safe-area-inset-top)); z-index:2; }
-.now .act { font-size:24px; font-weight:800; } .now .timer { font: 700 30px/1.1 ui-monospace, "SF Mono", Menlo, monospace; font-variant-numeric:tabular-nums; }
-.grp { margin:12px 0 4px; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
-.grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:8px; }
-@media (min-width:520px) { .grid { grid-template-columns:repeat(3, 1fr); } }
-.act-btn { min-height:60px; text-align:left; border-left:6px solid var(--gc, var(--line)); line-height:1.2; }
+.now { background:var(--now-bg); border:2px solid var(--now); border-radius:14px; padding:8px 10px; }
+.now .act { font-size:22px; font-weight:800; line-height:1.15; } .now .timer { font: 700 26px/1.1 ui-monospace, "SF Mono", Menlo, monospace; font-variant-numeric:tabular-nums; }
+.now .meta { font-size:13px; color:var(--muted); }
+.ptbar { display:flex; gap:6px; overflow-x:auto; padding:6px 0 2px; scrollbar-width:none; } .ptbar::-webkit-scrollbar { display:none; }
+.ptbar button { min-width:44px; flex:none; font-size:17px; }
+.grid4 { display:grid; grid-template-columns:repeat(4, 1fr); gap:5px; margin-top:6px; }
+.act-btn { min-height:48px; padding:4px 5px; font-size:13.5px; line-height:1.15; text-align:left; border-left:5px solid var(--gc, var(--line)); hyphens:auto; }
 .act-btn.on { background:var(--now); color:var(--acc-ink); border-color:var(--now); }
-.places { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; } .places button { min-height:40px; font-size:14px; padding:6px 10px; }
-.bar { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px; }
+.bar { display:grid; gap:5px; margin-top:6px; } .bar4 { grid-template-columns:repeat(4, 1fr); } .bar3 { grid-template-columns:repeat(3, 1fr); } .bar2 { grid-template-columns:1fr 1fr; }
+.bar button { font-size:14px; padding:4px 4px; }
+.ev-int { border-color:var(--ev-int); color:var(--ev-int); } .ev-help { border-color:var(--ev-help); color:var(--ev-help); } .ev-mt { border-color:var(--ev-mt); color:var(--ev-mt); }
+.ev-mt.open { background:var(--ev-mt); color:#fff; }
+.due { display:flex; gap:6px; align-items:center; background:var(--warn-bg); color:var(--warn); border-radius:10px; padding:4px 6px 4px 10px; margin-top:6px; font-weight:700; font-size:14px; }
+.due span { flex:1; } .due button { min-height:36px; font-size:14px; }
+/* bottom sheet */
+.backdrop { position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:10; }
+.sheet { position:fixed; left:0; right:0; bottom:0; z-index:11; max-height:88vh; overflow-y:auto; background:var(--card); border-radius:16px 16px 0 0;
+  padding:12px max(12px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); box-shadow:0 -6px 24px rgba(0,0,0,.25); }
+.sheet .inner { max-width:640px; margin:0 auto; }
+.sheet h2 { margin:2px 0 8px; }
+.opts { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; } .opts.two { grid-template-columns:1fr 1fr; } .opts.four { grid-template-columns:repeat(4, 1fr); }
+.opts button { min-height:48px; }
+.stepper { display:grid; grid-template-columns:56px 1fr 56px; gap:6px; align-items:center; } .stepper .v { text-align:center; font: 700 26px ui-monospace, Menlo, monospace; }
+.toast { position:fixed; left:50%; transform:translateX(-50%); bottom:max(16px, env(safe-area-inset-bottom)); z-index:20; background:var(--ink); color:var(--bg);
+  padding:8px 14px; border-radius:99px; font-weight:600; font-size:14px; max-width:90vw; }
+.plan { width:100%; height:min(52vh, 420px); background:#fbfcfd; border:1px solid var(--line); border-radius:10px; touch-action:manipulation; }
+.tabs { display:flex; gap:5px; overflow-x:auto; padding-bottom:4px; } .tabs button { flex:none; min-height:36px; font-size:14px; }
+.chart { overflow-x:auto; border:1px solid var(--line); border-radius:10px; background:var(--card); }
 .tl { font: 13px/1.5 ui-monospace, "SF Mono", Menlo, monospace; }
+.tlrow { display:flex; gap:6px; align-items:center; padding:3px 0; border-top:1px solid var(--line); } .tlrow:first-child { border-top:0; } .tlrow span { flex:1; }
+.tlrow button { min-height:34px; font-size:13px; }
 pre.rep { white-space:pre-wrap; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, monospace; margin:0; }
+.flags { display:grid; grid-template-columns:auto 1fr; gap:6px 10px; align-items:center; } .flags .opts button { min-height:40px; font-size:14px; }
 </style>
 </head>
 <body>
 <main id="app"><p>Loading…</p></main>
-<script>/* Time & Motion tools in JavaScript (phase 0, 24 Nov 2026; revision b the same day: patients, outline): the twin of tools/tm.py: the site file, the mapping check and the
-   session-file validator, with the same checks, messages and JSON. No dependencies and no network: it runs in Node and in a
-   browser (the Time & Motion app embeds it: window.TM). test_tm.py checks that it and tm.py agree.
-
-   Node:  node tm.js sitefile <orange-sim folder> [--site wexham] > tm-site-wexham.json
-          node tm.js check-mapping <orange-sim folder> [--site wexham]
-          node tm.js validate <orange-sim folder> <session.json> [more.json ...] [--site wexham] [--sitefile tm-site.json] [--json]
-          node tm.js checksum <session.json>
-   Browser/app:  TM.validate(doc, siteFile, name) → report; TM.checksum(doc) → "sha256:…"; TM.parseTime(s) → ms or null.
-   The format (ed-tm/1), its codes and its rules are in engine-data/data-dictionary.json, section staffObservation. */
+<div id="layer"></div>
+<script>/* tm.js (Time & Motion contract checker, from the simulator project): library part only, as embedded in the app. */
 (function (root) {
   "use strict";
   const FORMAT = "ed-tm/1", SITE_FORMAT = "ed-tm-site/1";
@@ -441,54 +452,19 @@ pre.rep { white-space:pre-wrap; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, 
   const TM = { FORMAT, SITE_FORMAT, parseTime, canon, sha256hex, checksum, checkMapping, placesOf, buildSiteFile, validate, tagN, fmtMs };
   if (typeof module !== "undefined" && module.exports) module.exports = TM; else root.TM = TM;
 
-  // ---------------------------------------------------------------- command line (Node)
-  // (exit codes are set with process.exitCode, not process.exit(), so long output piped to another program is written in full)
-  if (typeof require !== "undefined" && typeof module !== "undefined" && require.main === module) (function main() {
-    const fs = require("fs"), path = require("path"), a = process.argv.slice(2);
-    const opt = (k, d) => (a.includes(k) ? a[a.indexOf(k) + 1] : d);
-    const pos = a.filter((x, i) => !x.startsWith("--") && (i === 0 || !["--site", "--sitefile"].includes(a[i - 1])));
-    const usage = () => { console.log("usage: node tm.js sitefile|check-mapping|validate|checksum … (see the top of tm.js)"); process.exit(2); };
-    if (pos.length < 2) usage();
-    const cmd = pos[0], site = opt("--site", "wexham"), j = (p) => JSON.parse(fs.readFileSync(p, "utf8"));
-    if (cmd === "checksum") { console.log(checksum(j(pos[1]))); return; }
-    const R0 = pos[1];
-    const pack = { dictionary: j(path.join(R0, "engine-data", "data-dictionary.json")), site: j(path.join(R0, "site", site, "site.json")),
-      geometry: j(path.join(R0, "site", site, "geometry.json")), mapping: j(path.join(R0, "site", site, "data-mapping.json")), siteId: site, outline: null };
-    const of = (pack.mapping.staffObservation || {}).outlineFile;
-    if (of && fs.existsSync(path.join(R0, "site", site, of))) pack.outline = j(path.join(R0, "site", site, of));
-    if (cmd === "check-mapping") { const P = checkMapping(pack); console.log(P.length ? P.join("\n") : `The ${site} staffObservation mapping passes.`); process.exitCode = P.length ? 1 : 0; return; }
-    if (cmd === "sitefile") { process.stdout.write(JSON.stringify(buildSiteFile(pack), null, 1) + "\n"); return; }
-    if (cmd === "validate") {
-      const sf = opt("--sitefile", null), siteFile = sf ? j(sf) : buildSiteFile(pack);
-      if (siteFile.format !== SITE_FORMAT) { console.error(`the site file's format should be ${SITE_FORMAT}`); process.exitCode = 1; return; }
-      const reps = pos.slice(2).map((p) => {
-        let doc;
-        try { doc = j(p); } catch (e) { return { file: path.basename(p), ok: false, errors: [{ code: "unreadable", at: "", message: "can't read the file as JSON" }], warnings: [], summary: null }; }
-        return validate(doc, siteFile, path.basename(p));
-      });
-      if (a.includes("--json")) process.stdout.write(JSON.stringify(reps, null, 1) + "\n");
-      else for (const r of reps) {
-        console.log(`${r.file}: ${r.ok ? "accepted" : "REFUSED"} (${r.errors.length} error(s), ${r.warnings.length} warning(s))`);
-        for (const e of r.errors) console.log(`  error   ${e.message}`);
-        for (const w of r.warnings) console.log(`  warning ${w.message}`);
-        const s = r.summary;
-        if (s) console.log(`  ${s.intervals} intervals, ${s.patients} patients, ${s.events} events; observed ${fmtMs(s.observedSec * 1000)}, out of view ${fmtMs(s.unseenSec * 1000)}, paused ${fmtMs(s.pausedSec * 1000)}`);
-      }
-      process.exitCode = reps.every((r) => r.ok) ? 0 : 1; return;
-    }
-    usage();
-  })();
 })(typeof globalThis !== "undefined" ? globalThis : this);
 </script>
 <script>/* Time & Motion app: the session core (no screen, no storage). Turns taps into an ed-tm/1 session, as defined in the
    simulator project's data dictionary (staffObservation, revision 2026-11-24b). Runs in the browser (window.TMCore) and
    in Node (tests). Every change takes `now` (a Date) so tests can drive the clock. Times are written as local time with
-   the UTC offset and milliseconds, e.g. 2026-12-01T14:03:27.412+00:00. */
+   the UTC offset and milliseconds, e.g. 2026-12-01T14:03:27.412+00:00.
+   Phase 2 (0.2.0): patient tags with the patients table, point events, context snapshots, notes, undo and corrections. */
 (function (root) {
   "use strict";
   const pad = (n, w) => String(n).padStart(w || 2, "0");
   /** The contract revision this core writes (the site file's contract should carry the same). */
   const CONTRACT_REVISION = "2026-11-24b";
+  const CONTEXT_EVERY_MS = 30 * 60000, UNDO_DEPTH = 20;
 
   /** A Date -> local ISO 8601 with milliseconds and the UTC offset in force at that instant. */
   function iso(d) {
@@ -497,6 +473,8 @@ pre.rep { white-space:pre-wrap; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, 
       `.${pad(d.getMilliseconds(), 3)}${sign}${pad(Math.floor(a / 60))}:${pad(a % 60)}`;
   }
   const ms = (s) => Date.parse(s);   // our own strings always parse; tm.js parseTime is the reference
+  /** 0 -> A, 25 -> Z, 26 -> AA … (as tm.js) */
+  function tagN(i) { let s = ""; i += 1; while (i) { const r = (i - 1) % 26; i = Math.floor((i - 1) / 26); s = String.fromCharCode(65 + r) + s; } return s; }
 
   function randomCode(prefix) {
     const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", b = new Uint8Array(6);
@@ -506,20 +484,29 @@ pre.rep { white-space:pre-wrap; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, 
 
   /** A new session in state 'ready': the clock starts with the first activity tap. */
   function create(header, site, appVersion, now) {
-    return {
+    return upgrade({
       id: header.code, rev: 0, status: "ready", created: iso(now), updated: iso(now), exportedAt: null,
       appVersion, siteId: site.siteId, taxonomyVersion: Math.max(...site.taxonomyVersions),
       session: Object.assign({ start: null, end: null }, header),
       intervals: [], pauses: [], places: [], events: [], context: [], patients: [], edits: [], notes: [],
       resumeWith: null, clockFixes: 0,
-    };
+    });
+  }
+  /** Sessions saved by earlier builds lack the phase 2 fields; add them (nothing else changes). */
+  function upgrade(s) {
+    for (const k of ["patients", "events", "context", "notes", "edits"]) if (!Array.isArray(s[k])) s[k] = [];
+    if (s.cur === undefined) s.cur = null;             // the current patient tag (or null)
+    if (s.mt === undefined) s.mt = null;               // the open multitask's activity (or null)
+    if (!Array.isArray(s.undo)) s.undo = [];            // snapshots for undo (not exported)
+    if (s.ctxSkip === undefined) s.ctxSkip = null;     // when the last context prompt was skipped
+    return s;
   }
 
   function lastTime(s) {
     let t = s.session.start ? ms(s.session.start) : -Infinity;
     for (const r of s.intervals) t = Math.max(t, ms(r.start), r.end ? ms(r.end) : -Infinity);
     for (const r of s.pauses) t = Math.max(t, ms(r.start), r.end ? ms(r.end) : -Infinity);
-    for (const r of s.places) if (r.time) t = Math.max(t, ms(r.time));
+    for (const k of ["places", "events", "context", "notes"]) for (const r of s[k]) if (r.time) t = Math.max(t, ms(r.time));
     return t;
   }
   /** The tap's time; if the phone's clock has gone backwards, one millisecond after the last time instead. */
@@ -531,6 +518,9 @@ pre.rep { white-space:pre-wrap; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, 
   const open = (s) => { const r = s.intervals[s.intervals.length - 1]; return r && r.end === null ? r : null; };
   const openPause = (s) => { const r = s.pauses[s.pauses.length - 1]; return r && r.end === null ? r : null; };
   const current = (s) => open(s);
+  const actDef = (site, a) => site.contract.activities.find((x) => x.code === a) || {};
+  const isComputer = (site, a) => !!actDef(site, a).computer;
+  const takesPatient = (site, a) => actDef(site, a).patient !== "none";
 
   function startInterval(s, t, activity, extra) {
     const r = { seq: s.intervals.length + 1, start: t, end: null, activity };
@@ -539,13 +529,34 @@ pre.rep { white-space:pre-wrap; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, 
     s.intervals.push(r);
     return r;
   }
-  const isComputer = (site, a) => !!(site.contract.activities.find((x) => x.code === a) || {}).computer;
 
-  /** Tap an activity. In 'ready' this starts the session. */
+  /* ---------------------------------------------------------------- undo */
+  // notes are not part of undo (the edits table has no notes entry, and undoing an earlier tap must not remove a note)
+  const SNAP = ["status", "intervals", "pauses", "places", "events", "context", "patients", "cur", "mt", "resumeWith", "ctxSkip"];
+  /** Remember the state before a change, so undo can put it back. `what` = {table, before} for the edits trail. */
+  function checkpoint(s, what) {
+    const snap = { start: s.session.start, end: s.session.end };
+    for (const k of SNAP) snap[k] = s[k];
+    s.undo.push({ what, snap: JSON.parse(JSON.stringify(snap)) });
+    if (s.undo.length > UNDO_DEPTH) s.undo.shift();
+  }
+  /** Undo the last change; it is recorded in edits. Returns the undone change's description, or null. */
+  function undo(s, now) {
+    if (s.status === "ended" || !s.undo.length) return null;
+    const { what, snap } = s.undo.pop();
+    for (const k of SNAP) s[k] = snap[k];
+    s.session.start = snap.start; s.session.end = snap.end;
+    s.edits.push({ time: iso(now), action: "undo", table: what.table, before: what.before, after: null });
+    return what;
+  }
+
+  /* ---------------------------------------------------------------- activities and patients */
+  /** Tap an activity. In 'ready' this starts the session. The current patient goes with it unless the activity takes none. */
   function setActivity(s, site, activity, now) {
     if (s.status === "ended" || s.status === "paused") return false;
-    const extra = isComputer(site, activity) ? { screen: "seen" } : null;
+    const extra = { screen: isComputer(site, activity) ? "seen" : null, patient: takesPatient(site, activity) ? s.cur : null };
     if (s.status === "ready") {
+      checkpoint(s, { table: "intervals", before: { activity: null } });
       const t = iso(now);
       s.session.start = t; s.status = "running";
       fixReadyPlaces(s);
@@ -553,10 +564,47 @@ pre.rep { white-space:pre-wrap; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, 
       return true;
     }
     const cur = open(s);
-    if (cur && cur.activity === activity) return false;
+    if (cur && cur.activity === activity && (cur.patient || null) === extra.patient) return false;
+    checkpoint(s, { table: "intervals", before: { activity: cur.activity, start: cur.start, patient: cur.patient || null } });
     const t = stamp(s, now);
     cur.end = t;
     startInterval(s, t, activity, extra);
+    return true;
+  }
+
+  /** Choose the current patient (a tag, or null for none). A running activity that takes a patient is split here. */
+  function setPatient(s, site, tag, now, noCheckpoint) {
+    if (s.status === "ended" || (tag !== null && !s.patients.some((p) => p.tag === tag))) return false;
+    const cur = open(s);
+    const split = s.status === "running" && cur && takesPatient(site, cur.activity) && (cur.patient || null) !== tag;
+    if (s.cur === tag && !split) return false;
+    if (!noCheckpoint) checkpoint(s, { table: "intervals", before: { patient: s.cur } });
+    s.cur = tag;
+    if (s.status === "paused" && s.resumeWith && takesPatient(site, s.resumeWith.activity)) s.resumeWith.patient = tag;
+    if (split) {
+      const t = stamp(s, now);
+      cur.end = t;
+      startInterval(s, t, cur.activity, { patient: tag, screen: cur.screen });
+    }
+    return true;
+  }
+  /** A new patient tag (A, B, C…). startedBefore: true (already theirs), false (new now) or null (not sure). */
+  function newPatient(s, site, startedBefore, now) {
+    if (s.status === "ended") return null;
+    checkpoint(s, { table: "patients", before: { tags: s.patients.length, cur: s.cur } });
+    const tag = tagN(s.patients.length);
+    s.patients.push({ tag, startedBefore: startedBefore === true || startedBefore === false ? startedBefore : null, openAtEnd: null });
+    setPatient(s, site, tag, now, true);
+    return tag;
+  }
+  /** Set a patient's flag ('startedBefore' or 'openAtEnd'). Changing a value already given is a correction (edits). */
+  function setFlag(s, tag, field, value, now) {
+    const p = s.patients.find((x) => x.tag === tag);
+    if (!p || (field !== "startedBefore" && field !== "openAtEnd")) return false;
+    const v = value === true || value === false ? value : null;
+    if (p[field] === v) return false;
+    if (p[field] !== null && p[field] !== undefined) s.edits.push({ time: iso(now), action: "change", table: "patients", before: { tag, [field]: p[field] }, after: { tag, [field]: v } });
+    p[field] = v;
     return true;
   }
 
@@ -566,6 +614,7 @@ pre.rep { white-space:pre-wrap; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, 
     if (!cur || s.status !== "running" || !isComputer(site, cur.activity)) return false;
     const want = seen ? "seen" : "not_seen";
     if (cur.screen === want) return false;
+    checkpoint(s, { table: "intervals", before: { activity: cur.activity, screen: cur.screen } });
     const t = stamp(s, now);
     cur.end = t;
     startInterval(s, t, cur.activity, { patient: cur.patient, screen: want });
@@ -576,15 +625,62 @@ pre.rep { white-space:pre-wrap; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, 
     if (s.status === "ended") return false;
     const last = s.places[s.places.length - 1];
     if (last && last.place === place) return false;
-    // before the first activity tap, the place is recorded at the start (fixed up in setActivity's start time below)
+    checkpoint(s, { table: "places", before: { place: last ? last.place : null } });
+    // before the first activity tap, the place is recorded at the start (fixed up when the session starts)
     const t = s.status === "ready" ? null : stamp(s, now);
     s.places.push({ time: t, place });
     return true;
   }
 
+  /* ---------------------------------------------------------------- point events, context, notes */
+  /** Add a point event: {event, source?, outcome?, grade?, activity?}. Help events carry the current patient. */
+  function addEvent(s, site, ev, now) {
+    if (s.status !== "running") return false;
+    const def = site.contract.events.find((e) => e.code === ev.event);
+    if (!def || def.needs.some((n) => ev[n] === undefined || ev[n] === null || ev[n] === "")) return false;
+    if (ev.event === "multitask_start" && s.mt) return false;
+    if (ev.event === "multitask_end" && !s.mt) return false;
+    checkpoint(s, { table: "events", before: { event: ev.event } });
+    const row = { time: stamp(s, now), event: ev.event };
+    for (const k of ["source", "outcome", "grade", "activity"]) if (ev[k]) row[k] = ev[k];
+    if ((ev.event === "help_asked" || ev.event === "help_given") && s.cur) row.patient = s.cur;
+    s.events.push(row);
+    if (ev.event === "multitask_start") s.mt = ev.activity;
+    if (ev.event === "multitask_end") s.mt = null;
+    return true;
+  }
+  /** A department snapshot: {waiting, doctorsOn, escalation}; any may be null. */
+  function addContext(s, snap, now) {
+    if (s.status !== "running" && s.status !== "paused") return false;
+    checkpoint(s, { table: "context", before: null });
+    const n = (v) => (Number.isInteger(v) && v >= 0 ? v : null);
+    s.context.push({ time: stamp(s, now), waiting: n(snap.waiting), doctorsOn: n(snap.doctorsOn),
+      escalation: snap.escalation === "yes" || snap.escalation === "no" ? snap.escalation : null });
+    s.ctxSkip = null;
+    return true;
+  }
+  function skipContext(s, now) { s.ctxSkip = iso(now); }
+  /** True when a context snapshot is due: none yet, or 30 min since the last snapshot or skip. */
+  function contextDue(s, now) {
+    if (s.status !== "running") return false;
+    const last = Math.max(s.context.length ? ms(s.context[s.context.length - 1].time) : -Infinity, s.ctxSkip ? ms(s.ctxSkip) : -Infinity);
+    if (last === -Infinity) return true;
+    return now.getTime() - last >= CONTEXT_EVERY_MS;
+  }
+  function addNote(s, text, now) {
+    text = String(text || "").trim();
+    if (!text || s.status === "ready" || s.status === "ended" || [...text].length > 500) return false;
+    s.notes.push({ time: stamp(s, now), text });
+    return true;
+  }
+
+  /* ---------------------------------------------------------------- pause, resume, end */
+  function closeMultitask(s, t) { if (s.mt) { s.events.push({ time: t, event: "multitask_end" }); s.mt = null; } }
   function pause(s, now) {
     if (s.status !== "running") return false;
+    checkpoint(s, { table: "pauses", before: null });
     const cur = open(s), t = stamp(s, now);
+    closeMultitask(s, t);
     cur.end = t;
     s.resumeWith = { activity: cur.activity, patient: cur.patient || null, screen: cur.screen || null };
     s.pauses.push({ start: t, end: null });
@@ -593,6 +689,7 @@ pre.rep { white-space:pre-wrap; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, 
   }
   function resume(s, now) {
     if (s.status !== "paused") return false;
+    checkpoint(s, { table: "pauses", before: null });
     const p = openPause(s), t = stamp(s, now);
     p.end = t;
     const w = s.resumeWith || { activity: "unseen" };
@@ -604,10 +701,52 @@ pre.rep { white-space:pre-wrap; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, 
     if (s.status !== "running" && s.status !== "paused") return false;
     const t = stamp(s, now);
     const cur = open(s), p = openPause(s);
+    if (s.status === "running") closeMultitask(s, t);
     if (cur) cur.end = t;
     if (p) p.end = t;
-    s.session.end = t; s.status = "ended"; s.resumeWith = null;
+    s.session.end = t; s.status = "ended"; s.resumeWith = null; s.undo = [];
     return true;
+  }
+
+  /* ---------------------------------------------------------------- corrections */
+  /** Change an interval's activity and/or patient (the time stays). Recorded in edits. */
+  function relabel(s, site, seq, change, now) {
+    const r = s.intervals[seq - 1];
+    if (!r) return false;
+    const after = { activity: change.activity || r.activity, patient: change.patient === undefined ? (r.patient || null) : change.patient };
+    if (!takesPatient(site, after.activity)) after.patient = null;
+    if (after.patient && !s.patients.some((p) => p.tag === after.patient)) return false;
+    if (after.activity === r.activity && after.patient === (r.patient || null)) return false;
+    if (s.status !== "ended") checkpoint(s, { table: "intervals", before: { seq, activity: r.activity, patient: r.patient || null } });
+    s.edits.push({ time: iso(now), action: "change", table: "intervals",
+      before: { seq, activity: r.activity, patient: r.patient || null }, after: { seq, activity: after.activity, patient: after.patient } });
+    r.activity = after.activity;
+    if (after.patient) r.patient = after.patient; else delete r.patient;
+    if (isComputer(site, r.activity)) { if (!r.screen) r.screen = "seen"; } else delete r.screen;
+    return true;
+  }
+  /** Move the current activity's start earlier by `sec` seconds (it was tapped late), taking the time from the activity
+      before it. Not across a pause or the session start. Recorded in edits. */
+  function moveStart(s, sec, now) {
+    const cur = open(s);
+    if (!cur || s.status !== "running" || cur.seq < 2) return false;
+    const prev = s.intervals[cur.seq - 2];
+    if (prev.end !== cur.start) return false;                       // a pause lies between them
+    const t = ms(cur.start) - sec * 1000;
+    if (t <= ms(prev.start) + 1000) return false;                    // leave the activity before at least 1 s
+    checkpoint(s, { table: "intervals", before: { seq: cur.seq, start: cur.start } });
+    const ti = iso(new Date(t));
+    s.edits.push({ time: iso(now), action: "change", table: "intervals", before: { seq: cur.seq, start: cur.start }, after: { seq: cur.seq, start: ti } });
+    prev.end = ti; cur.start = ti;
+    return true;
+  }
+  /** Seconds the current activity's start can move back (0 if it can't). */
+  function canMoveBy(s) {
+    const cur = open(s);
+    if (!cur || s.status !== "running" || cur.seq < 2) return 0;
+    const prev = s.intervals[cur.seq - 2];
+    if (prev.end !== cur.start) return 0;
+    return Math.max(0, Math.floor((ms(cur.start) - ms(prev.start) - 1000) / 1000));
   }
 
   /** Places tapped before the first activity carry no time yet: give them the session start. */
@@ -625,7 +764,7 @@ pre.rep { white-space:pre-wrap; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, 
       Sessions saved by 0.1.0 have no patients table; they export with an empty one. */
   function exportDoc(s, TM) {
     if (s.status !== "ended") throw new Error("end the session before exporting");
-    fixReadyPlaces(s);
+    upgrade(s); fixReadyPlaces(s);
     const H = s.session;
     const session = clean({ code: H.code, observer: H.observer, staffGroup: H.staffGroup, gradeBand: H.gradeBand, post: H.post,
       zone: H.zone, shiftStart: H.shiftStart, shiftEnd: H.shiftEnd, start: H.start, end: H.end, consent: H.consent });
@@ -633,8 +772,8 @@ pre.rep { white-space:pre-wrap; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, 
     const doc = {
       format: "ed-tm/1", appVersion: s.appVersion, taxonomyVersion: s.taxonomyVersion, siteId: s.siteId, session,
       intervals: s.intervals.map(clean), pauses: s.pauses.map(clean), places: s.places.map(clean), events: s.events.map(clean),
-      context: s.context.map(clean), patients: (s.patients || []).map(clean), edits: s.edits.map((e) => Object.assign({}, e)),
-      notes: s.notes.map(clean),
+      context: s.context.map((c) => ({ time: c.time, waiting: c.waiting, doctorsOn: c.doctorsOn, escalation: c.escalation })),
+      patients: s.patients.map(clean), edits: s.edits.map((e) => Object.assign({}, e)), notes: s.notes.map(clean),
     };
     doc.checksum = TM.checksum(doc);
     return doc;
@@ -643,12 +782,13 @@ pre.rep { white-space:pre-wrap; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, 
     const d = doc.session.start.slice(0, 10).replace(/-/g, "");
     return `tm_${doc.session.code}_${d}.${ext || "json"}`;
   }
-  /** The intervals as CSV, for checking by eye (the JSON is the record). */
+  /** The intervals, pauses and events as CSV, for checking by eye (the JSON is the record). */
   function csv(doc) {
     const q = (v) => { v = v === undefined || v === null ? "" : String(v); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
-    const lines = ["seq,start,end,seconds,activity,patient,screen"];
-    for (const r of doc.intervals) lines.push([r.seq, r.start, r.end, Math.round((ms(r.end) - ms(r.start)) / 1000), r.activity, r.patient, r.screen].map(q).join(","));
-    for (const p of doc.pauses) lines.push(["pause", p.start, p.end, Math.round((ms(p.end) - ms(p.start)) / 1000), "", "", ""].map(q).join(","));
+    const lines = ["kind,seq,start,end,seconds,what,patient,screen,source,outcome"];
+    for (const r of doc.intervals) lines.push(["activity", r.seq, r.start, r.end, Math.round((ms(r.end) - ms(r.start)) / 1000), r.activity, r.patient, r.screen, "", ""].map(q).join(","));
+    for (const p of doc.pauses) lines.push(["pause", "", p.start, p.end, Math.round((ms(p.end) - ms(p.start)) / 1000), "", "", "", "", ""].map(q).join(","));
+    for (const e of doc.events) lines.push(["event", "", e.time, "", "", e.event + (e.activity ? ":" + e.activity : ""), e.patient, "", e.source, e.outcome].map(q).join(","));
     return lines.join("\r\n") + "\r\n";
   }
 
@@ -658,28 +798,29 @@ pre.rep { white-space:pre-wrap; font: 13px/1.45 ui-monospace, "SF Mono", Menlo, 
     for (const r of s.intervals) if (r.activity !== "unseen") t += (r.end ? ms(r.end) : now.getTime()) - ms(r.start);
     return Math.max(0, Math.floor(t / 1000));
   }
-
   /** The contract revision a site file carries (top-level, or in its contract), or null if it has none. */
   const siteRevision = (site) => (site && (site.revision || (site.contract && site.contract.revision))) || null;
 
-  const TMCore = { CONTRACT_REVISION, iso, randomCode, create, setActivity, setScreen, setPlace, pause, resume, end, exportDoc,
-    fileName, csv, current, observedSec, isComputer, fixReadyPlaces, siteRevision };
+  const TMCore = { CONTRACT_REVISION, CONTEXT_EVERY_MS, iso, tagN, randomCode, create, upgrade, setActivity, setPatient, newPatient, setFlag,
+    setScreen, setPlace, addEvent, addContext, skipContext, contextDue, addNote, pause, resume, end, undo, relabel, moveStart, canMoveBy,
+    exportDoc, fileName, csv, current, observedSec, isComputer, takesPatient, fixReadyPlaces, siteRevision };
   if (typeof module !== "undefined" && module.exports) module.exports = TMCore; else root.TMCore = TMCore;
 })(typeof globalThis !== "undefined" ? globalThis : this);
 </script>
 <script>
 "use strict";
-/* Time & Motion app: phase 1 test build. Every tap is saved at once to IndexedDB, with a copy in localStorage.
-   Nothing is ever sent anywhere: export goes through the phone's share sheet, to wherever the observer chooses. */
-const APP_VERSION = "0.1.1-phase1";
-const DEMO_SITE = {"format":"ed-tm-site/1","revision":"2026-11-24b","siteId":"demo","siteName":"Demo site (invented, for testing)","taxonomyVersions":[1],"zones":[{"id":"zone-a","name":"Zone A","slot":null},{"id":"zone-b","name":"Zone B","slot":null}],"words":{},"gradeLabels":{"fy1":"FY1","st1_2":"FY2–ST2","st3":"ST3","st4plus":"ST4+","consultant":"Consultant","acp":"ACP","nurse":"Nurse","hca":"HCA","other":"Other"},"places":[{"id":"desk-a","label":"Zone A desk","kind":"desk","zone":"zone-a","x":0,"y":0,"confirm":false},{"id":"cub-a1","label":"Cubicle A1","kind":"cubicle","zone":"zone-a","x":4,"y":0,"confirm":false},{"id":"cub-a2","label":"Cubicle A2","kind":"cubicle","zone":"zone-a","x":8,"y":0,"confirm":false},{"id":"wait-a","label":"Zone A waiting","kind":"waiting","zone":"zone-a","x":0,"y":6,"confirm":false},{"id":"desk-b","label":"Zone B desk","kind":"desk","zone":"zone-b","x":20,"y":0,"confirm":false},{"id":"bay-b1","label":"Bay B1","kind":"bay","zone":"zone-b","x":24,"y":0,"confirm":false},{"id":"corridor","label":"Corridor","kind":"area","zone":null,"x":12,"y":3,"confirm":false},{"id":"elsewhere","label":"Elsewhere","kind":"offplan","zone":null,"x":null,"y":null,"confirm":false}],"bounds":{"xMin":0,"xMax":24,"yMin":0,"yMax":6},"outline":[{"name":"Building","kind":"building","points":[[-2,-2],[26,-2],[26,8],[-2,8]]},{"name":"Zone A desk","kind":"zone-a","points":[[-1.5,-1.5],[1.5,-1.5],[1.5,1.5],[-1.5,1.5]]},{"name":"Cubicle A1","kind":"zone-a","points":[[2.5,-1.5],[5.5,-1.5],[5.5,1.5],[2.5,1.5]]},{"name":"Cubicle A2","kind":"zone-a","points":[[6.5,-1.5],[9.5,-1.5],[9.5,1.5],[6.5,1.5]]},{"name":"Zone A waiting","kind":"zone-a","points":[[-1.5,4.5],[4,4.5],[4,7.5],[-1.5,7.5]]},{"name":"Zone B desk","kind":"zone-b","points":[[18.5,-1.5],[21.5,-1.5],[21.5,1.5],[18.5,1.5]]},{"name":"Bay B1","kind":"zone-b","points":[[22.5,-1.5],[25.5,-1.5],[25.5,1.5],[22.5,1.5]]},{"name":"Cubicle A1 door","kind":"door","points":[[3.5,1.4],[4.5,1.4],[4.5,1.6],[3.5,1.6]]}],"contract":{"about":"Time & Motion phase 0 (24 Nov 2026, user): the contract between the Time & Motion app and the simulator. One observer shadows one member of staff and records a timeline of exclusive activities, location changes, point events and department context. One session = one JSON file in format ed-tm/1. The app writes it; tools/tm.py (Python, standard library) and tools/tm.js (JavaScript, for the app and Node) check it with identical verdicts; later estimators read it (phase 3). Raw session files stay on the observer's device (user, 18 Nov 2026): they are never seen or processed by AI. Nothing in a file may identify a person: no names of staff or patients, no hospital numbers, no bed-and-date combinations in notes. Revision 2026-11-24b took the Time & Motion project's proposals of 24 Nov (the multitasked outcome, the patients table, four more activities, definitions, the floor outline); no session files existed, so ed-tm/1 and taxonomy 1 keep their numbers. The activity list (taxonomy 1, 24 activities) was reviewed by the Time & Motion project against WOMBAT's categories (Walter et al. 2019) and is confirmed in the pilot; a new list means a new taxonomyVersion, and the site mapping says which versions it reads.","format":"ed-tm/1","taxonomyVersions":[1],"times":"ISO 8601 local time to the second with its UTC offset, e.g. 2026-12-01T14:03:27+00:00 (Z allowed for +00:00; up to 3 decimals of a second allowed). The offset makes durations right across clock changes. The app should write milliseconds: two taps in the same second would otherwise make a zero-length interval, which is refused.","file":{"about":"Top-level keys. All are required; an empty table is an empty list.","keys":["format","appVersion","taxonomyVersion","siteId","session","intervals","pauses","places","events","context","patients","edits","notes","checksum"],"checksum":"\"sha256:\" + the hex SHA-256 of the file's canonical JSON with checksum removed: keys sorted at every level, no spaces (separators , and :), non-ASCII characters written as themselves (UTF-8). Every number in a file is an integer, so Python and JavaScript write the same text."},"session":{"about":"One object: who was observed, in which post, when.","fields":[{"name":"code","type":"id","required":true,"about":"a random session code (4–24 of A–Z, 0–9 and -), never a name or initials"},{"name":"observer","type":"id","required":true,"about":"the observer's code (same pattern)"},{"name":"staffGroup","type":"category","required":true,"values":["doctor","acp","nurse","hca","other"],"about":"version 1 observes doctors (and ACPs working as doctors); the others are allowed for later"},{"name":"gradeBand","type":"category","required":true,"values":["fy1","st1_2","st3","st4plus","consultant","acp","nurse","hca","other"],"about":"generic grade band; the site mapping turns local names (e.g. Red top) into these and these into the model's grades"},{"name":"post","type":"category","required":true,"values":["pool","pico","epic","majorsCons","alpha","resus","hub","paeds","utc","other"],"about":"the post held during the session, as the engine names its posts (the site's words say what each is called locally)"},{"name":"zone","type":"zone","required":false,"about":"the site zone (site.json zone id) the person mainly worked in; empty if mixed"},{"name":"shiftStart","type":"datetime","required":false,"about":"the person's rostered shift start"},{"name":"shiftEnd","type":"datetime","required":false,"about":"the person's rostered shift end"},{"name":"start","type":"datetime","required":true,"about":"observation start"},{"name":"end","type":"datetime","required":true,"about":"observation end"},{"name":"consent","type":"category","required":true,"values":["yes"],"about":"the observed person agreed before the session; a file without it is refused"},{"name":"pilot","type":"boolean","required":true,"about":"true for method-testing sessions, which estimators leave out by default"}]},"tables":{"intervals":{"about":"One row per stretch of one activity. Rows in seq order (1, 2, 3…), each start before its end. Intervals and pauses together tile the session exactly: the first begins at session.start, each next one begins where the last ended, the last ends at session.end.","fields":[{"name":"seq","type":"integer","required":true},{"name":"start","type":"datetime","required":true},{"name":"end","type":"datetime","required":true},{"name":"activity","type":"activity","required":true},{"name":"patient","type":"patientTag","required":false,"about":"A, B … Z, AA, AB …: the order patients were first met in this session; empty if none"},{"name":"screen","type":"category","required":false,"values":["seen","not_seen"],"about":"computer activities only: whether the observer could see what was on screen (the 'screen not visible' flag)"}]},"pauses":{"about":"The observer stopped observing (their own break, or a stop). Never part of any share or rate.","fields":[{"name":"start","type":"datetime","required":true},{"name":"end","type":"datetime","required":true}]},"places":{"about":"Where the observed person is, as a time series of changes (tapped on the floor plan), kept apart from the activity. Rows in time order. A place holds until the next row.","fields":[{"name":"time","type":"datetime","required":true},{"name":"place","type":"place","required":true,"about":"a place id from the site file (ed-tm-site/1)"}]},"events":{"about":"Point events laid over the timeline. Rows in time order.","fields":[{"name":"time","type":"datetime","required":true},{"name":"event","type":"event","required":true},{"name":"source","type":"category","required":false,"values":["nurse","doctor","hca","patient","relative","phone","bleep","epic","other"],"about":"who or what prompted it (interruptions; who helped or asked)"},{"name":"outcome","type":"category","required":false,"values":["switched","multitasked","deferred","ignored"],"about":"interruptions: the observed person switched task, handled it alongside the current task without stopping it (multitasked), deferred it, or ignored it. The switched/multitasked split follows Walter et al. 2014 (BMJ Qual Saf 23:231); they don't count ignored prompts, so leave ignored out of any rate compared with theirs."},{"name":"grade","type":"category","required":false,"values":["fy1","st1_2","st3","st4plus","consultant","acp","nurse","hca","other"],"about":"help events: the other person's grade band, if known"},{"name":"activity","type":"activity","required":false,"about":"multitask_start: the second activity running alongside"},{"name":"patient","type":"patientTag","required":false}]},"context":{"about":"Department snapshots, prompted every 30 min; any field may be empty (null) if not known.","fields":[{"name":"time","type":"datetime","required":true},{"name":"waiting","type":"count","required":false,"about":"patients waiting to be seen in the observed person's zone (from the board)"},{"name":"doctorsOn","type":"count","required":false,"about":"doctors on duty in that zone"},{"name":"escalation","type":"category","required":false,"values":["yes","no"],"about":"whether the department was in escalation"}]},"patients":{"about":"One row per patient tag used in the session, in tag order (A, B, C…). The flags say whether the observed person's involvement with the patient is complete within the session, so estimators can keep complete episodes apart from cut-off ones (sessions catch only part of each patient's stay: Walter et al. 2019). The first consult with a tag whose startedBefore is false is the model's first contact (cubicle); later ones are review.","fields":[{"name":"tag","type":"patientTag","required":true},{"name":"startedBefore","type":"boolean","required":false,"about":"true if the observed person was already involved with this patient when the session started; empty if not known"},{"name":"openAtEnd","type":"boolean","required":false,"about":"true if the observed person was still involved with this patient when the session ended; empty if not known"}]},"edits":{"about":"The audit trail of every undo or correction made in the app. Not used by estimators.","fields":[{"name":"time","type":"datetime","required":true},{"name":"action","type":"category","required":true,"values":["undo","change","insert","delete"]},{"name":"table","type":"category","required":true,"values":["intervals","places","events","context","patients","pauses","session"]},{"name":"before","type":"any","required":false},{"name":"after","type":"any","required":false}]},"notes":{"about":"Free text with a time. Never read by the estimators. Never names, patient details or bed-and-time combinations.","fields":[{"name":"time","type":"datetime","required":true},{"name":"text","type":"text","required":true,"about":"at most 500 characters"}]}},"activities":[{"code":"fetch","label":"Calling or walking a patient to a cubicle","patient":"expected","computer":false},{"code":"consult","label":"With a patient: history, examination, explanation","patient":"expected","computer":false},{"code":"procedure","label":"A practical task with a patient (cannula, ECG, plaster)","patient":"expected","computer":false},{"code":"escort","label":"Going with a patient elsewhere (CT, Resus, a ward)","patient":"expected","computer":false},{"code":"notes","label":"Writing notes at a computer","patient":"optional","computer":true},{"code":"order","label":"Requesting tests or prescribing at a computer","patient":"optional","computer":true},{"code":"results","label":"Reviewing results or imaging","patient":"optional","computer":true},{"code":"board","label":"Checking the board or choosing the next patient","patient":"optional","computer":false},{"code":"refer","label":"Referring a patient to a specialty (phone or in person)","patient":"expected","computer":false},{"code":"discuss","label":"Clinical discussion with a colleague","patient":"optional","computer":false},{"code":"phone","label":"On the phone (not a referral)","patient":"optional","computer":false},{"code":"teach","label":"Supervising or teaching","patient":"optional","computer":false},{"code":"wait_cubicle","label":"Waiting for a free cubicle","patient":"optional","computer":false},{"code":"wait_computer","label":"Waiting for a free computer","patient":"optional","computer":false},{"code":"wait_senior","label":"Waiting for a senior","patient":"optional","computer":false},{"code":"wait_other","label":"Waiting for a patient, nurse or result","patient":"optional","computer":false},{"code":"walk","label":"Moving without a patient","patient":"none","computer":false},{"code":"handover","label":"Shift or board handover","patient":"none","computer":false},{"code":"crash","label":"Crash call or Resus team call","patient":"optional","computer":false},{"code":"admin","label":"Non-patient work (rota, email, forms)","patient":"none","computer":true},{"code":"social","label":"Non-clinical chat with colleagues","patient":"none","computer":false},{"code":"break","label":"On a break","patient":"none","computer":false},{"code":"idle","label":"Nothing to do","patient":"none","computer":false},{"code":"unseen","label":"Out of the observer's view (session still running)","patient":"none","computer":false}],"events":[{"code":"interruption","label":"Interrupted","needs":["source","outcome"]},{"code":"help_asked","label":"Asked someone for help or advice","needs":[]},{"code":"help_given","label":"Was asked for help or advice","needs":[]},{"code":"multitask_start","label":"A second activity starts alongside the current one","needs":["activity"]},{"code":"multitask_end","label":"The second activity ends","needs":[]}],"modelStates":{"about":"The engine's doctor states (21-state tallies; 52-staff-log.js SL_DOC), parts of them that the mapping may name, and the engine's grades, so a mapping can be checked without the engine.","values":["cubicle","fetch","review","notesCubicle","desk","waitCubicle","waitDesk","waitSenior","discuss","triage","handover","eemac","break","waitPatient","task","crash","other","idle","walk","unobserved"],"grades":["Red","Purple","Grey","Turquoise"]},"siteFile":{"about":"What the app loads to know a site and the contract: made by tools/tm.py sitefile (or tm.js) from the site pack (site.json, geometry.json, data-mapping.json staffObservation) and this section, which it carries whole as 'contract'. Format ed-tm-site/1.","format":"ed-tm-site/1","keys":["format","revision","siteId","siteName","taxonomyVersions","zones","words","gradeLabels","places","bounds","outline","contract"],"place":"{id, label, kind, zone (a site zone id or null), x, y (metres on the site plan; null for off-plan places), confirm (true where the label is Claude's guess, to check)}","placeKinds":["cubicle","bed","bay","desk","waiting","triage","room","imaging","toilet","entrance","lift","base","corner","area","offplan"],"outline":"a list of shapes for drawing the plan: {name, kind, points: [[x, y], …]} in metres, the same coordinates as the places. The first is the building ('building'); rooms carry the floor plan's zone word as kind; doors are 'door'. From site/<site>/outline.json (named in the mapping's staffObservation.outlineFile); empty if the site has none.","revision":"the contract's revision (staffObservation.revision), so the app can show which contract it carries"},"rules":["Errors (the file is refused): wrong format or taxonomy version; a missing key or required field; a value outside its list; a time that is not ISO 8601 with an offset; consent not yes; session end not after start; intervals out of seq order, empty, or not tiling the session with the pauses; anything timed outside the session; tables out of time order; a place the site file doesn't list (when a site file is given); screen on a non-computer activity; an event missing what it needs; a multitask_end with no open multitask_start; a patient tag listed twice in patients, or patients rows not in tag order; a non-integer or negative count; a note over 500 characters; a checksum that doesn't match.","Warnings (the file is accepted): a fetch, consult or procedure with no patient tag; a patient tag on a 'none' activity; patient tags not first met in order (A, B, C…); an interval over 4 h; more than 60 min without a context snapshot; an event during a pause; a multitask still open at the end; no place recorded in the first minute; a tag used in intervals or events with no patients row; a patients row whose tag is never used; an event tag that no interval uses."],"revision":"2026-11-24b","definitions":["notes: writing notes at a computer or on paper.","consult: face to face with the patient. The first consult with a tag whose startedBefore is false is the model's first contact; later ones with the same tag are review.","procedure: includes fetching the equipment for it.","fetch: calling a patient and walking them to a cubicle; escort: going with a patient anywhere else (CT, Resus, a ward).","refer: the referral itself, by phone or in person; finding a phone for it counts as refer. Other calls are phone.","Asking for help: a help_asked event at the moment of asking; the time that follows is logged as discuss (or wait_senior while waiting for the senior).","board: reading the board or choosing who to see next; social: non-clinical chat. Neither counts as clinical discussion.","unseen: the observer is present but the person is out of view; a pause: the observer is not observing. Both are left out of every share.","screen: on computer activities only; not_seen when the observer can't see what is on screen."]}};
+/* Time & Motion app, phase 2: the observation screen. Every tap is saved at once to IndexedDB, with a copy in
+   localStorage. Nothing is ever sent anywhere: export goes through the phone's share sheet, to wherever the observer
+   chooses. No site's own file is built in: a real site's file is loaded on the phone; the built-in one is invented. */
+const APP_VERSION = "0.2.0-phase2";
+const DEMO_SITE = {"format":"ed-tm-site/1","revision":"2026-11-24b","siteId":"demo","siteName":"Demo site (invented, for testing)","taxonomyVersions":[1],"zones":[{"id":"zone-a","name":"Zone A","slot":null},{"id":"zone-b","name":"Zone B","slot":null}],"words":{},"gradeLabels":{"fy1":"FY1","st1_2":"FY2–ST2","st3":"ST3","st4plus":"ST4+","consultant":"Consultant","acp":"ACP","nurse":"Nurse","hca":"HCA","other":"Other"},"places":[{"id":"desk-a","label":"Zone A desk","kind":"desk","zone":"zone-a","x":0,"y":0,"confirm":false},{"id":"cub-a1","label":"Cubicle A1","kind":"cubicle","zone":"zone-a","x":4,"y":0,"confirm":false},{"id":"cub-a2","label":"Cubicle A2","kind":"cubicle","zone":"zone-a","x":8,"y":0,"confirm":false},{"id":"wait-a","label":"Zone A waiting","kind":"waiting","zone":"zone-a","x":0,"y":6,"confirm":false},{"id":"desk-b","label":"Zone B desk","kind":"desk","zone":"zone-b","x":20,"y":0,"confirm":false},{"id":"bay-b1","label":"Bay B1","kind":"bay","zone":"zone-b","x":24,"y":0,"confirm":false},{"id":"corridor","label":"Corridor","kind":"area","zone":null,"x":12,"y":3,"confirm":false},{"id":"elsewhere","label":"Elsewhere","kind":"offplan","zone":null,"x":null,"y":null,"confirm":false}],"bounds":{"xMin":0,"xMax":24,"yMin":0,"yMax":6},"outline":[{"name":"Building","kind":"building","points":[[-2,-2],[26,-2],[26,8],[-2,8]]},{"name":"Zone A desk","kind":"zone-a","points":[[-1.5,-1.5],[1.5,-1.5],[1.5,1.5],[-1.5,1.5]]},{"name":"Cubicle A1","kind":"zone-a","points":[[2.5,-1.5],[5.5,-1.5],[5.5,1.5],[2.5,1.5]]},{"name":"Cubicle A2","kind":"zone-a","points":[[6.5,-1.5],[9.5,-1.5],[9.5,1.5],[6.5,1.5]]},{"name":"Zone A waiting","kind":"zone-a","points":[[-1.5,4.5],[4,4.5],[4,7.5],[-1.5,7.5]]},{"name":"Zone B desk","kind":"zone-b","points":[[18.5,-1.5],[21.5,-1.5],[21.5,1.5],[18.5,1.5]]},{"name":"Bay B1","kind":"zone-b","points":[[22.5,-1.5],[25.5,-1.5],[25.5,1.5],[22.5,1.5]]},{"name":"Cubicle A1 door","kind":"door","points":[[3.5,1.4],[4.5,1.4],[4.5,1.6],[3.5,1.6]]}],"contract":{"about":"Time & Motion phase 0 (24 Nov 2026, user): the contract between the Time & Motion app and the simulator. One observer shadows one member of staff and records a timeline of exclusive activities, location changes, point events and department context. One session = one JSON file in format ed-tm/1. The app writes it; tools/tm.py (Python, standard library) and tools/tm.js (JavaScript, for the app and Node) check it with identical verdicts; later estimators read it (phase 3). Raw session files stay on the observer's device (user, 18 Nov 2026): they are never seen or processed by AI. Nothing in a file may identify a person: no names of staff or patients, no hospital numbers, no bed-and-date combinations in notes. Revision 2026-11-24b took the Time & Motion project's proposals of 24 Nov (the multitasked outcome, the patients table, four more activities, definitions, the floor outline); no session files existed, so ed-tm/1 and taxonomy 1 keep their numbers. The activity list (taxonomy 1, 24 activities) was reviewed by the Time & Motion project against WOMBAT's categories (Walter et al. 2019) and is confirmed in the pilot; a new list means a new taxonomyVersion, and the site mapping says which versions it reads.","format":"ed-tm/1","taxonomyVersions":[1],"times":"ISO 8601 local time to the second with its UTC offset, e.g. 2026-12-01T14:03:27+00:00 (Z allowed for +00:00; up to 3 decimals of a second allowed). The offset makes durations right across clock changes. The app should write milliseconds: two taps in the same second would otherwise make a zero-length interval, which is refused.","file":{"about":"Top-level keys. All are required; an empty table is an empty list.","keys":["format","appVersion","taxonomyVersion","siteId","session","intervals","pauses","places","events","context","patients","edits","notes","checksum"],"checksum":"\"sha256:\" + the hex SHA-256 of the file's canonical JSON with checksum removed: keys sorted at every level, no spaces (separators , and :), non-ASCII characters written as themselves (UTF-8). Every number in a file is an integer, so Python and JavaScript write the same text."},"session":{"about":"One object: who was observed, in which post, when.","fields":[{"name":"code","type":"id","required":true,"about":"a random session code (4–24 of A–Z, 0–9 and -), never a name or initials"},{"name":"observer","type":"id","required":true,"about":"the observer's code (same pattern)"},{"name":"staffGroup","type":"category","required":true,"values":["doctor","acp","nurse","hca","other"],"about":"version 1 observes doctors (and ACPs working as doctors); the others are allowed for later"},{"name":"gradeBand","type":"category","required":true,"values":["fy1","st1_2","st3","st4plus","consultant","acp","nurse","hca","other"],"about":"generic grade band; the site mapping turns local names (e.g. a site's own name for a grade) into these and these into the model's grades"},{"name":"post","type":"category","required":true,"values":["pool","pico","epic","majorsCons","alpha","resus","hub","paeds","utc","other"],"about":"the post held during the session, as the engine names its posts (the site's words say what each is called locally)"},{"name":"zone","type":"zone","required":false,"about":"the site zone (site.json zone id) the person mainly worked in; empty if mixed"},{"name":"shiftStart","type":"datetime","required":false,"about":"the person's rostered shift start"},{"name":"shiftEnd","type":"datetime","required":false,"about":"the person's rostered shift end"},{"name":"start","type":"datetime","required":true,"about":"observation start"},{"name":"end","type":"datetime","required":true,"about":"observation end"},{"name":"consent","type":"category","required":true,"values":["yes"],"about":"the observed person agreed before the session; a file without it is refused"},{"name":"pilot","type":"boolean","required":true,"about":"true for method-testing sessions, which estimators leave out by default"}]},"tables":{"intervals":{"about":"One row per stretch of one activity. Rows in seq order (1, 2, 3…), each start before its end. Intervals and pauses together tile the session exactly: the first begins at session.start, each next one begins where the last ended, the last ends at session.end.","fields":[{"name":"seq","type":"integer","required":true},{"name":"start","type":"datetime","required":true},{"name":"end","type":"datetime","required":true},{"name":"activity","type":"activity","required":true},{"name":"patient","type":"patientTag","required":false,"about":"A, B … Z, AA, AB …: the order patients were first met in this session; empty if none"},{"name":"screen","type":"category","required":false,"values":["seen","not_seen"],"about":"computer activities only: whether the observer could see what was on screen (the 'screen not visible' flag)"}]},"pauses":{"about":"The observer stopped observing (their own break, or a stop). Never part of any share or rate.","fields":[{"name":"start","type":"datetime","required":true},{"name":"end","type":"datetime","required":true}]},"places":{"about":"Where the observed person is, as a time series of changes (tapped on the floor plan), kept apart from the activity. Rows in time order. A place holds until the next row.","fields":[{"name":"time","type":"datetime","required":true},{"name":"place","type":"place","required":true,"about":"a place id from the site file (ed-tm-site/1)"}]},"events":{"about":"Point events laid over the timeline. Rows in time order.","fields":[{"name":"time","type":"datetime","required":true},{"name":"event","type":"event","required":true},{"name":"source","type":"category","required":false,"values":["nurse","doctor","hca","patient","relative","phone","bleep","epic","other"],"about":"who or what prompted it (interruptions; who helped or asked)"},{"name":"outcome","type":"category","required":false,"values":["switched","multitasked","deferred","ignored"],"about":"interruptions: the observed person switched task, handled it alongside the current task without stopping it (multitasked), deferred it, or ignored it. The switched/multitasked split follows Walter et al. 2014 (BMJ Qual Saf 23:231); they don't count ignored prompts, so leave ignored out of any rate compared with theirs."},{"name":"grade","type":"category","required":false,"values":["fy1","st1_2","st3","st4plus","consultant","acp","nurse","hca","other"],"about":"help events: the other person's grade band, if known"},{"name":"activity","type":"activity","required":false,"about":"multitask_start: the second activity running alongside"},{"name":"patient","type":"patientTag","required":false}]},"context":{"about":"Department snapshots, prompted every 30 min; any field may be empty (null) if not known.","fields":[{"name":"time","type":"datetime","required":true},{"name":"waiting","type":"count","required":false,"about":"patients waiting to be seen in the observed person's zone (from the board)"},{"name":"doctorsOn","type":"count","required":false,"about":"doctors on duty in that zone"},{"name":"escalation","type":"category","required":false,"values":["yes","no"],"about":"whether the department was in escalation"}]},"patients":{"about":"One row per patient tag used in the session, in tag order (A, B, C…). The flags say whether the observed person's involvement with the patient is complete within the session, so estimators can keep complete episodes apart from cut-off ones (sessions catch only part of each patient's stay: Walter et al. 2019). The first consult with a tag whose startedBefore is false is the model's first contact (cubicle); later ones are review.","fields":[{"name":"tag","type":"patientTag","required":true},{"name":"startedBefore","type":"boolean","required":false,"about":"true if the observed person was already involved with this patient when the session started; empty if not known"},{"name":"openAtEnd","type":"boolean","required":false,"about":"true if the observed person was still involved with this patient when the session ended; empty if not known"}]},"edits":{"about":"The audit trail of every undo or correction made in the app. Not used by estimators.","fields":[{"name":"time","type":"datetime","required":true},{"name":"action","type":"category","required":true,"values":["undo","change","insert","delete"]},{"name":"table","type":"category","required":true,"values":["intervals","places","events","context","patients","pauses","session"]},{"name":"before","type":"any","required":false},{"name":"after","type":"any","required":false}]},"notes":{"about":"Free text with a time. Never read by the estimators. Never names, patient details or bed-and-time combinations.","fields":[{"name":"time","type":"datetime","required":true},{"name":"text","type":"text","required":true,"about":"at most 500 characters"}]}},"activities":[{"code":"fetch","label":"Calling or walking a patient to a cubicle","patient":"expected","computer":false},{"code":"consult","label":"With a patient: history, examination, explanation","patient":"expected","computer":false},{"code":"procedure","label":"A practical task with a patient (cannula, ECG, plaster)","patient":"expected","computer":false},{"code":"escort","label":"Going with a patient elsewhere (CT, Resus, a ward)","patient":"expected","computer":false},{"code":"notes","label":"Writing notes at a computer","patient":"optional","computer":true},{"code":"order","label":"Requesting tests or prescribing at a computer","patient":"optional","computer":true},{"code":"results","label":"Reviewing results or imaging","patient":"optional","computer":true},{"code":"board","label":"Checking the board or choosing the next patient","patient":"optional","computer":false},{"code":"refer","label":"Referring a patient to a specialty (phone or in person)","patient":"expected","computer":false},{"code":"discuss","label":"Clinical discussion with a colleague","patient":"optional","computer":false},{"code":"phone","label":"On the phone (not a referral)","patient":"optional","computer":false},{"code":"teach","label":"Supervising or teaching","patient":"optional","computer":false},{"code":"wait_cubicle","label":"Waiting for a free cubicle","patient":"optional","computer":false},{"code":"wait_computer","label":"Waiting for a free computer","patient":"optional","computer":false},{"code":"wait_senior","label":"Waiting for a senior","patient":"optional","computer":false},{"code":"wait_other","label":"Waiting for a patient, nurse or result","patient":"optional","computer":false},{"code":"walk","label":"Moving without a patient","patient":"none","computer":false},{"code":"handover","label":"Shift or board handover","patient":"none","computer":false},{"code":"crash","label":"Crash call or Resus team call","patient":"optional","computer":false},{"code":"admin","label":"Non-patient work (rota, email, forms)","patient":"none","computer":true},{"code":"social","label":"Non-clinical chat with colleagues","patient":"none","computer":false},{"code":"break","label":"On a break","patient":"none","computer":false},{"code":"idle","label":"Nothing to do","patient":"none","computer":false},{"code":"unseen","label":"Out of the observer's view (session still running)","patient":"none","computer":false}],"events":[{"code":"interruption","label":"Interrupted","needs":["source","outcome"]},{"code":"help_asked","label":"Asked someone for help or advice","needs":[]},{"code":"help_given","label":"Was asked for help or advice","needs":[]},{"code":"multitask_start","label":"A second activity starts alongside the current one","needs":["activity"]},{"code":"multitask_end","label":"The second activity ends","needs":[]}],"modelStates":{"about":"The engine's doctor states (21-state tallies; 52-staff-log.js SL_DOC), parts of them that the mapping may name, and the engine's grades, so a mapping can be checked without the engine.","values":["cubicle","fetch","review","notesCubicle","desk","waitCubicle","waitDesk","waitSenior","discuss","triage","handover","eemac","break","waitPatient","task","crash","other","idle","walk","unobserved"],"grades":["Red","Purple","Grey","Turquoise"]},"siteFile":{"about":"What the app loads to know a site and the contract: made by tools/tm.py sitefile (or tm.js) from the site pack (site.json, geometry.json, data-mapping.json staffObservation) and this section, which it carries whole as 'contract'. Format ed-tm-site/1.","format":"ed-tm-site/1","keys":["format","revision","siteId","siteName","taxonomyVersions","zones","words","gradeLabels","places","bounds","outline","contract"],"place":"{id, label, kind, zone (a site zone id or null), x, y (metres on the site plan; null for off-plan places), confirm (true where the label is Claude's guess, to check)}","placeKinds":["cubicle","bed","bay","desk","waiting","triage","room","imaging","toilet","entrance","lift","base","corner","area","offplan"],"outline":"a list of shapes for drawing the plan: {name, kind, points: [[x, y], …]} in metres, the same coordinates as the places. The first is the building ('building'); rooms carry the floor plan's zone word as kind; doors are 'door'. From site/<site>/outline.json (named in the mapping's staffObservation.outlineFile); empty if the site has none.","revision":"the contract's revision (staffObservation.revision), so the app can show which contract it carries"},"rules":["Errors (the file is refused): wrong format or taxonomy version; a missing key or required field; a value outside its list; a time that is not ISO 8601 with an offset; consent not yes; session end not after start; intervals out of seq order, empty, or not tiling the session with the pauses; anything timed outside the session; tables out of time order; a place the site file doesn't list (when a site file is given); screen on a non-computer activity; an event missing what it needs; a multitask_end with no open multitask_start; a patient tag listed twice in patients, or patients rows not in tag order; a non-integer or negative count; a note over 500 characters; a checksum that doesn't match.","Warnings (the file is accepted): a fetch, consult or procedure with no patient tag; a patient tag on a 'none' activity; patient tags not first met in order (A, B, C…); an interval over 4 h; more than 60 min without a context snapshot; an event during a pause; a multitask still open at the end; no place recorded in the first minute; a tag used in intervals or events with no patients row; a patients row whose tag is never used; an event tag that no interval uses."],"revision":"2026-11-24b","definitions":["notes: writing notes at a computer or on paper.","consult: face to face with the patient. The first consult with a tag whose startedBefore is false is the model's first contact; later ones with the same tag are review.","procedure: includes fetching the equipment for it.","fetch: calling a patient and walking them to a cubicle; escort: going with a patient anywhere else (CT, Resus, a ward).","refer: the referral itself, by phone or in person; finding a phone for it counts as refer. Other calls are phone.","Asking for help: a help_asked event at the moment of asking; the time that follows is logged as discuss (or wait_senior while waiting for the senior).","board: reading the board or choosing who to see next; social: non-clinical chat. Neither counts as clinical discussion.","unseen: the observer is present but the person is out of view; a pause: the observer is not observing. Both are left out of every share.","screen: on computer activities only; not_seen when the observer can't see what is on screen."]}};
 const C = window.TMCore, TMv = window.TM;
 const $ = (sel) => document.querySelector(sel);
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const hms = (sec) => { sec = Math.max(0, Math.floor(sec)); return `${Math.floor(sec / 3600)}:${String(Math.floor(sec / 60) % 60).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`; };
 const clock = (isoStr) => isoStr ? isoStr.slice(11, 19) : "";
+const hhmm = (isoStr) => isoStr ? isoStr.slice(11, 16) : "";
 const when = (isoStr) => isoStr ? `${isoStr.slice(8, 10)}/${isoStr.slice(5, 7)} ${isoStr.slice(11, 16)}` : "never";
-/** Whether a site file carries the contract revision this app writes. */
 const revOk = (st) => C.siteRevision(st) === C.CONTRACT_REVISION;
 const revText = (st) => C.siteRevision(st) || "none (older than revision b)";
 
@@ -717,6 +858,7 @@ const Store = {
     const by = {};
     if (this.idbOk) { try { for (const s of (await this.tx("sessions", "readonly", (st) => st.getAll())) || []) by[s.id] = s; } catch (e) { this.lastError = "IndexedDB read: " + e.message; } }
     try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith("tm.s.")) { const s = this.lsGet(k); if (s && (!by[s.id] || s.rev > by[s.id].rev)) by[s.id] = s; } } } catch (e) { /* none */ }
+    for (const s of Object.values(by)) C.upgrade(s);
     return by;
   },
   async deleteSession(id) {
@@ -732,9 +874,10 @@ const Store = {
 
 /* ---------------------------------------------------------------- app state */
 const A = { view: "home", sessions: {}, cur: null, sites: { demo: DEMO_SITE }, siteId: "demo", persisted: null, estimate: null,
-  wake: null, wakeState: "off", lastExport: null, armed: null, report: null, tick: null };
+  wake: null, wakeState: "off", lastExport: null, armed: null, tick: null, sheet: null, toast: null, dueShown: null };
 const site = () => A.sites[A.siteId] || DEMO_SITE;
 const siteFor = (s) => A.sites[s.siteId] || null;
+const S = () => A.sessions[A.cur];
 const standalone = () => window.navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
 
 async function boot() {
@@ -748,52 +891,60 @@ async function boot() {
   await refreshStorageInfo();
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) navigator.serviceWorker.register("sw.js").catch(() => {});
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { render(); wakeUp(); } });
+  document.addEventListener("click", onClick);
   render();
 }
 async function refreshStorageInfo() {
   try { A.persisted = navigator.storage && navigator.storage.persisted ? await navigator.storage.persisted() : null; } catch (e) { A.persisted = null; }
   try { A.estimate = navigator.storage && navigator.storage.estimate ? await navigator.storage.estimate() : null; } catch (e) { A.estimate = null; }
 }
-async function askPersist() {
-  try { if (navigator.storage && navigator.storage.persist) A.persisted = await navigator.storage.persist(); } catch (e) { /* not offered */ }
-}
+async function askPersist() { try { if (navigator.storage && navigator.storage.persist) A.persisted = await navigator.storage.persist(); } catch (e) { /* not offered */ } }
 
 /* ---------------------------------------------------------------- screen wake lock */
 async function wakeUp() {
-  const s = A.sessions[A.cur];
+  const s = S();
   if (A.view !== "session" || !s || s.status === "ended") return wakeDown();
-  if (!("wakeLock" in navigator)) { A.wakeState = "not supported"; return paintWake(); }
+  if (!("wakeLock" in navigator)) { A.wakeState = "not supported"; return; }
   if (A.wake && !A.wake.released) return;
-  try { A.wake = await navigator.wakeLock.request("screen"); A.wakeState = "on"; A.wake.addEventListener("release", () => { A.wakeState = "off"; paintWake(); }); }
+  try { A.wake = await navigator.wakeLock.request("screen"); A.wakeState = "on"; A.wake.addEventListener("release", () => { A.wakeState = "off"; }); }
   catch (e) { A.wakeState = "refused"; }
-  paintWake();
 }
 function wakeDown() { if (A.wake && !A.wake.released) A.wake.release().catch(() => {}); A.wake = null; A.wakeState = "off"; }
-function paintWake() { const el = $("#wake"); if (el) el.textContent = "Screen kept on: " + A.wakeState; }
+
+/* ---------------------------------------------------------------- activity buttons: 4 × 6 */
+const GROUPS = [
+  ["--g-pt", ["consult", "fetch", "procedure", "escort"]],
+  ["--g-pc", ["notes", "order", "results", "admin"]],
+  ["--g-talk", ["refer", "discuss", "phone", "teach", "handover", "social", "board"]],
+  ["--g-oth", ["walk"]],
+  ["--g-wait", ["wait_cubicle", "wait_computer", "wait_senior", "wait_other"]],
+  ["--g-oth", ["crash", "break", "idle", "unseen"]],
+];
+const SHORT = { fetch: "Fetch", consult: "Consult", procedure: "Procedure", escort: "Escort", notes: "Notes", order: "Order / Rx",
+  results: "Results", admin: "Admin", refer: "Refer", discuss: "Discuss", phone: "Phone", teach: "Teach", handover: "Handover",
+  social: "Social", board: "Board", walk: "Walk", wait_cubicle: "Wait cubicle", wait_computer: "Wait PC", wait_senior: "Wait senior",
+  wait_other: "Wait other", crash: "Crash / Resus", break: "Break", idle: "Idle", unseen: "Out of view" };
+const actLabel = (c) => SHORT[c] || c;
+const colourOf = (c) => { for (const [col, cs] of GROUPS) if (cs.includes(c)) return col; return "--g-oth"; };
+function buttonCodes(st) {
+  const codes = st.contract.activities.map((a) => a.code), known = GROUPS.flatMap((g) => g[1]);
+  return known.filter((c) => codes.includes(c)).concat(codes.filter((c) => !known.includes(c)));
+}
+const SOURCES = [["nurse", "Nurse"], ["doctor", "Doctor"], ["hca", "HCA"], ["patient", "Patient"], ["relative", "Relative"], ["phone", "Phone"], ["bleep", "Bleep"], ["epic", "EPIC"], ["other", "Other"]];
+const OUTCOMES = [["switched", "Switched task"], ["multitasked", "Did both"], ["deferred", "Deferred"], ["ignored", "Ignored"]];
+const SOURCE_OF_GRADE = { fy1: "doctor", st1_2: "doctor", st3: "doctor", st4plus: "doctor", consultant: "doctor", acp: "other", nurse: "nurse", hca: "hca", other: "other" };
 
 /* ---------------------------------------------------------------- rendering */
-// Button groups for taxonomy 1 (contract revision b, 24 activities). Any code the contract has that isn't listed here
-// still appears, under "More".
-const GROUPS = [
-  ["With a patient", "--g-pt", ["fetch", "consult", "procedure", "escort"]],
-  ["At a computer", "--g-pc", ["notes", "order", "results", "admin"]],
-  ["Talking", "--g-talk", ["refer", "discuss", "phone", "teach", "handover", "social"]],
-  ["Waiting", "--g-wait", ["wait_cubicle", "wait_computer", "wait_senior", "wait_other"]],
-  ["Other", "--g-oth", ["board", "walk", "crash", "break", "idle", "unseen"]],
-];
-const SHORT = { fetch: "Fetch patient", consult: "Consult", procedure: "Procedure", escort: "Escort patient", notes: "Notes",
-  order: "Order / prescribe", results: "Results", admin: "Admin", refer: "Refer", discuss: "Discuss", phone: "Phone (not referral)",
-  teach: "Teach / supervise", handover: "Handover", social: "Social chat", wait_cubicle: "Wait: cubicle", wait_computer: "Wait: computer",
-  wait_senior: "Wait: senior", wait_other: "Wait: other", board: "Board / next patient", walk: "Walk", crash: "Crash / Resus call",
-  break: "Break", idle: "Idle", unseen: "Out of view" };
-const actLabel = (code) => SHORT[code] || code;
-
 function render() {
   clearInterval(A.tick); A.tick = null;
   const v = A.view;
-  if (v === "home") renderHome(); else if (v === "new") renderNew(); else if (v === "session") renderSession(); else if (v === "export") renderExport();
+  if (v === "home") renderHome(); else if (v === "new") renderNew(); else if (v === "session") renderSession();
+  else if (v === "timeline") renderTimeline(); else if (v === "export") renderExport();
+  renderLayer();
   if (v === "session") { A.tick = setInterval(paintTimers, 500); wakeUp(); } else wakeDown();
 }
+function toast(msg) { A.toast = msg; renderLayer(); clearTimeout(A.toastT); A.toastT = setTimeout(() => { A.toast = null; renderLayer(); }, 1800); }
+async function save(msg) { const s = S(); render(); if (msg) toast(msg); if (s) await Store.saveSession(s); }
 
 function renderHome() {
   const all = Object.values(A.sessions).sort((a, b) => (b.created > a.created ? 1 : -1));
@@ -803,71 +954,55 @@ function renderHome() {
   $("#app").innerHTML = `
     <h1>Time &amp; Motion</h1>
     <div class="muted">Test build ${APP_VERSION} · site: ${esc(st.siteName)} · contract ${esc(revText(st))}</div>
-    ${standalone() ? "" : `<div class="banner warn">You're in a browser tab, not the home-screen app. On an iPhone the two keep separate storage, so sessions made here won't appear in the home-screen app. For the test, use the home-screen icon.</div>`}
+    ${standalone() ? "" : `<div class="banner warn">You're in a browser tab, not the home-screen app. On an iPhone the two keep separate storage, so sessions made here won't appear in the home-screen app.</div>`}
     ${!Store.idbOk ? `<div class="banner bad">IndexedDB isn't available here, so sessions are kept in the backup copy (localStorage) only. ${esc(Store.lastError || "")}</div>` : ""}
-    ${revOk(st) ? "" : `<div class="banner warn">The chosen site file carries contract revision ${esc(revText(st))}, but this app writes revision ${esc(C.CONTRACT_REVISION)}. The check on this phone may not match the simulator's. Load the current site file (tm-site-wexham.json, revision ${esc(C.CONTRACT_REVISION)}).</div>`}
+    ${revOk(st) ? "" : `<div class="banner warn">The chosen site file carries contract revision ${esc(revText(st))}, but this app writes revision ${esc(C.CONTRACT_REVISION)}. The check on this phone may not match the simulator's. Load the site's current file (revision ${esc(C.CONTRACT_REVISION)}).</div>`}
     ${unexported ? `<div class="banner warn">${unexported} ended session(s) not yet exported.</div>` : ""}
     <div class="card">
       <div class="row spread"><span>Last export</span><strong>${esc(when(A.lastExport))}</strong></div>
       <div class="row spread"><span>Storage kept (persistent)</span><strong>${A.persisted === true ? "yes" : A.persisted === false ? "not granted" : "unknown"}</strong></div>
     </div>
-    <button class="primary wide" id="new" ${live ? "disabled" : ""}>New session</button>
+    <button class="primary wide" data-a="new" ${live ? "disabled" : ""}>New session</button>
     ${live ? `<div class="muted small">A session is open; end it before starting another.</div>` : ""}
     <h2>Sessions on this phone</h2>
     <div class="card list">${all.length ? all.map((s) => `
       <div class="item">
         <div class="row spread"><strong>${esc(s.id)}</strong><span class="chip">${esc(s.status === "ended" ? (s.exportedAt ? "exported" : "not exported") : s.status)}</span></div>
-        <div class="muted small">${esc(when(s.session.start || s.created))} · ${esc(s.session.gradeBand)} · ${esc(s.session.post)} · ${s.intervals.length} intervals · observed ${hms(C.observedSec(s, new Date()))}</div>
+        <div class="muted small">${esc(when(s.session.start || s.created))} · ${esc(s.session.gradeBand)} · ${esc(s.session.post)} · ${s.intervals.length} intervals · ${s.patients.length} patients · observed ${hms(C.observedSec(s, new Date()))}</div>
         <div class="row" style="margin-top:6px">
-          ${s.status !== "ended" ? `<button data-open="${esc(s.id)}">Open</button>` : `<button data-export="${esc(s.id)}">Export</button>`}
-          ${s.status === "ended" || s.status === "ready" ? `<button class="${A.armed === s.id ? "armed" : "danger"}" data-del="${esc(s.id)}">${A.armed === s.id ? (s.exportedAt || s.status === "ready" ? "Tap again to delete" : "Not exported! Tap again to delete") : "Delete"}</button>` : ""}
+          ${s.status !== "ended" ? `<button data-a="open" data-v="${esc(s.id)}">Open</button>` : `<button data-a="exportOf" data-v="${esc(s.id)}">Export</button>`}
+          ${s.status === "ended" || s.status === "ready" ? `<button class="${A.armed === s.id ? "armed" : "danger"}" data-a="del" data-v="${esc(s.id)}">${A.armed === s.id ? (s.exportedAt || s.status === "ready" ? "Tap again to delete" : "Not exported! Tap again to delete") : "Delete"}</button>` : ""}
         </div>
       </div>`).join("") : `<div class="muted">None yet.</div>`}</div>
     <h2>Site file</h2>
     <div class="card">
-      <div class="muted small">The site file gives the place list and the contract (ed-tm/1). The demo site is invented. To use a real site, load its file (e.g. tm-site-wexham.json) from Files; it stays on this phone.</div>
+      <div class="muted small">The site file gives the floor plan, the places and the contract (ed-tm/1). The built-in demo site is invented. Load a real site's file from Files; it stays on this phone and is never part of the app.</div>
       <div class="row" style="margin-top:8px">
         <select id="sitepick">${Object.values(A.sites).map((x) => `<option value="${esc(x.siteId)}" ${x.siteId === A.siteId ? "selected" : ""}>${esc(x.siteName)}</option>`).join("")}</select>
       </div>
-      <div class="row" style="margin-top:8px"><button id="loadsite">Load site file…</button><input type="file" id="sitefile" accept=".json,application/json" hidden></div>
+      <div class="row" style="margin-top:8px"><button data-a="loadsite">Load site file…</button><input type="file" id="sitefile" accept=".json,application/json" hidden></div>
     </div>
-    <h2>For the test</h2>
+    <h2>For testing</h2>
     <div class="card small">
-      <div>Home-screen app: <strong>${standalone() ? "yes" : "no"}</strong></div>
-      <div>Saves this run: ${Store.saves} · last save ${esc(clock(Store.lastSave)) || "–"}</div>
-      <div>IndexedDB: ${Store.idbOk ? "yes" : "no"} · screen wake lock: ${"wakeLock" in navigator ? "offered" : "not offered"} · share files: ${navigator.canShare ? "offered" : "not offered"}</div>
-      <div>Storage used: ${A.estimate && A.estimate.usage != null ? Math.round(A.estimate.usage / 1024) + " KB" : "unknown"}</div>
-      <div>Contract written: revision ${esc(C.CONTRACT_REVISION)}</div>
+      <div>Home-screen app: <strong>${standalone() ? "yes" : "no"}</strong> · saves this run: ${Store.saves} · last save ${esc(clock(Store.lastSave)) || "–"}</div>
+      <div>IndexedDB: ${Store.idbOk ? "yes" : "no"} · wake lock: ${"wakeLock" in navigator ? "offered" : "not offered"} · share files: ${navigator.canShare ? "offered" : "not offered"}</div>
+      <div>Storage used: ${A.estimate && A.estimate.usage != null ? Math.round(A.estimate.usage / 1024) + " KB" : "unknown"} · contract written: revision ${esc(C.CONTRACT_REVISION)}</div>
       ${Store.lastError ? `<div class="muted">Last storage problem: ${esc(Store.lastError)}</div>` : ""}
-      <div class="row" style="margin-top:8px"><button id="persist">Ask to keep storage</button><button id="update">Check for update</button></div>
+      <div class="row" style="margin-top:8px"><button data-a="persist">Ask to keep storage</button><button data-a="update" id="update">Check for update</button></div>
     </div>`;
-  $("#new").onclick = async () => { await askPersist(); A.view = "new"; render(); };
-  document.querySelectorAll("[data-open]").forEach((b) => (b.onclick = () => { A.cur = b.dataset.open; A.view = "session"; render(); }));
-  document.querySelectorAll("[data-export]").forEach((b) => (b.onclick = () => { A.cur = b.dataset.export; A.view = "export"; A.report = null; render(); }));
-  document.querySelectorAll("[data-del]").forEach((b) => (b.onclick = async () => {
-    const id = b.dataset.del;
-    if (A.armed !== id) { A.armed = id; render(); setTimeout(() => { if (A.armed === id) { A.armed = null; if (A.view === "home") render(); } }, 4000); return; }
-    A.armed = null; await Store.deleteSession(id); delete A.sessions[id]; render();
-  }));
   $("#sitepick").onchange = async (e) => { A.siteId = e.target.value; await Store.kvSet("siteChoice", A.siteId); render(); };
-  $("#loadsite").onclick = () => $("#sitefile").click();
   $("#sitefile").onchange = async (e) => {
     const f = e.target.files[0]; if (!f) return;
     try {
       const j = JSON.parse(await f.text());
       if (j.format !== TMv.SITE_FORMAT || !j.contract || !Array.isArray(j.places)) throw new Error("this isn't an ed-tm-site/1 file");
       A.sites[j.siteId] = j; A.siteId = j.siteId; await Store.kvSet("site", j); await Store.kvSet("siteChoice", j.siteId);
-      alertBanner(`Loaded ${j.siteName}: ${j.places.length} places, contract ${revText(j)}.` +
-        (revOk(j) ? "" : ` This app writes revision ${C.CONTRACT_REVISION}; load the current site file.`), revOk(j) ? "ok" : "warn");
-    } catch (err) { alertBanner("Couldn't load the site file: " + err.message, "bad"); }
-  };
-  $("#persist").onclick = async () => { await askPersist(); await refreshStorageInfo(); render(); };
-  $("#update").onclick = async () => {
-    try { const r = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); if (r) await r.update(); } catch (e) { /* offline */ }
-    location.reload();
+      render(); banner(`Loaded ${j.siteName}: ${j.places.length} places, ${(j.outline || []).length} plan shapes, contract ${revText(j)}.` +
+        (revOk(j) ? "" : ` This app writes revision ${C.CONTRACT_REVISION}; load the site's current file.`), revOk(j) ? "ok" : "warn");
+    } catch (err) { render(); banner("Couldn't load the site file: " + err.message, "bad"); }
   };
 }
-function alertBanner(msg, kind) { render(); const d = document.createElement("div"); d.className = "banner " + kind; d.textContent = msg; $("#app").prepend(d); }
+function banner(msg, kind) { const d = document.createElement("div"); d.className = "banner " + kind; d.textContent = msg; $("#app").prepend(d); }
 
 function renderNew() {
   const st = site(), so = st.contract, F = (n) => so.session.fields.find((f) => f.name === n);
@@ -875,132 +1010,262 @@ function renderNew() {
   $("#app").innerHTML = `
     <h1>New session</h1>
     <div class="muted small">Site: ${esc(st.siteName)}. No names: codes only.</div>
-    ${revOk(st) ? "" : `<div class="banner warn">This site file carries contract revision ${esc(revText(st))}, not ${esc(C.CONTRACT_REVISION)}. Sessions will still be saved, but load the current site file before the real study.</div>`}
+    ${revOk(st) ? "" : `<div class="banner warn">This site file carries contract revision ${esc(revText(st))}, not ${esc(C.CONTRACT_REVISION)}. Load the site's current file before the real study.</div>`}
     <label for="code">Session code</label>
-    <div class="row"><input type="text" id="code" value="${esc(C.randomCode("TM"))}" autocapitalize="characters" style="flex:1"><button id="regen">New code</button></div>
+    <div class="row nowrap"><input type="text" id="code" value="${esc(C.randomCode("TM"))}" autocapitalize="characters"><button data-a="regen">New code</button></div>
     <label for="observer">Your observer code</label>
     <input type="text" id="observer" value="${esc(Store.lsGet("tm.kv.observer") || "OBS-1")}" autocapitalize="characters">
     <label for="staffGroup">Staff group</label><select id="staffGroup">${opts(F("staffGroup").values, "doctor")}</select>
     <label for="gradeBand">Grade</label><select id="gradeBand">${opts(F("gradeBand").values, "st1_2", (v) => (st.gradeLabels && st.gradeLabels[v]) || v)}</select>
     <label for="post">Post</label><select id="post">${opts(F("post").values, "pool")}</select>
     <label for="zone">Main zone</label><select id="zone"><option value="">Mixed / not one zone</option>${st.zones.map((z) => `<option value="${esc(z.id)}">${esc(z.name)}</option>`).join("")}</select>
-    <div class="row"><div style="flex:1"><label for="shiftStart">Shift start (optional)</label><input type="time" id="shiftStart"></div>
+    <div class="row nowrap"><div style="flex:1"><label for="shiftStart">Shift start (optional)</label><input type="time" id="shiftStart"></div>
       <div style="flex:1"><label for="shiftEnd">Shift end (optional)</label><input type="time" id="shiftEnd"></div></div>
     <label class="check"><input type="checkbox" id="consent">The doctor has agreed to be observed</label>
     <label class="check"><input type="checkbox" id="pilot" checked>Pilot / method-testing session</label>
     <div id="formerr"></div>
-    <div class="bar"><button id="cancel">Cancel</button><button class="primary" id="ready">Ready</button></div>
-    <div class="muted small" style="margin-top:8px">The clock starts when you tap the first activity.</div>`;
-  $("#regen").onclick = () => { $("#code").value = C.randomCode("TM"); };
-  $("#cancel").onclick = () => { A.view = "home"; render(); };
-  $("#ready").onclick = async () => {
-    const code = $("#code").value.trim().toUpperCase(), observer = $("#observer").value.trim().toUpperCase();
-    const errs = [];
-    if (!/^[A-Z0-9-]{4,24}$/.test(code)) errs.push("Session code: 4–24 of A–Z, 0–9 and -.");
-    if (A.sessions[code]) errs.push("That session code is already on this phone.");
-    if (!/^[A-Z0-9-]{4,24}$/.test(observer)) errs.push("Observer code: 4–24 of A–Z, 0–9 and -.");
-    if (!$("#consent").checked) errs.push("A session can't start without the doctor's agreement.");
-    if (errs.length) { $("#formerr").innerHTML = `<div class="banner bad">${errs.map(esc).join("<br>")}</div>`; return; }
-    const now = new Date(), at = (hhmm, ref) => { if (!hhmm) return null; const [h, m] = hhmm.split(":").map(Number); const d = new Date(ref || now); d.setHours(h, m, 0, 0); return d; };
-    const ss = at($("#shiftStart").value), se0 = at($("#shiftEnd").value, ss || now);
-    const se = se0 && ss && se0 <= ss ? new Date(se0.getTime() + 86400000) : se0;
-    const header = { code, observer, staffGroup: $("#staffGroup").value, gradeBand: $("#gradeBand").value, post: $("#post").value,
-      zone: $("#zone").value || null, shiftStart: ss ? C.iso(ss) : null, shiftEnd: se ? C.iso(se) : null, consent: "yes", pilot: $("#pilot").checked };
-    Store.lsSet("tm.kv.observer", observer);
-    const s = C.create(header, site(), APP_VERSION, now);
-    A.sessions[s.id] = s; A.cur = s.id; await Store.saveSession(s);
-    A.view = "session"; render();
-  };
+    <div class="bar bar2"><button data-a="home">Cancel</button><button class="primary" data-a="ready" id="ready">Ready</button></div>
+    <div class="muted small" style="margin-top:8px">Next: add the patients the doctor already has (tap +), then tap the first activity to start the clock.</div>`;
+}
+async function createSession() {
+  const code = $("#code").value.trim().toUpperCase(), observer = $("#observer").value.trim().toUpperCase(), errs = [];
+  if (!/^[A-Z0-9-]{4,24}$/.test(code)) errs.push("Session code: 4–24 of A–Z, 0–9 and -.");
+  if (A.sessions[code]) errs.push("That session code is already on this phone.");
+  if (!/^[A-Z0-9-]{4,24}$/.test(observer)) errs.push("Observer code: 4–24 of A–Z, 0–9 and -.");
+  if (!$("#consent").checked) errs.push("A session can't start without the doctor's agreement.");
+  if (errs.length) { $("#formerr").innerHTML = `<div class="banner bad">${errs.map(esc).join("<br>")}</div>`; return; }
+  const now = new Date(), at = (v, ref) => { if (!v) return null; const [h, m] = v.split(":").map(Number); const d = new Date(ref || now); d.setHours(h, m, 0, 0); return d; };
+  const ss = at($("#shiftStart").value), se0 = at($("#shiftEnd").value, ss || now);
+  const se = se0 && ss && se0 <= ss ? new Date(se0.getTime() + 86400000) : se0;
+  const header = { code, observer, staffGroup: $("#staffGroup").value, gradeBand: $("#gradeBand").value, post: $("#post").value,
+    zone: $("#zone").value || null, shiftStart: ss ? C.iso(ss) : null, shiftEnd: se ? C.iso(se) : null, consent: "yes", pilot: $("#pilot").checked };
+  Store.lsSet("tm.kv.observer", observer);
+  const s = C.create(header, site(), APP_VERSION, now);
+  A.sessions[s.id] = s; A.cur = s.id; A.view = "session"; await save();
 }
 
+function placeName(st, id) { return (st.places.find((p) => p.id === id) || {}).label || id; }
 function renderSession() {
-  const s = A.sessions[A.cur]; if (!s) { A.view = "home"; return render(); }
-  const st = siteFor(s) || site(), so = st.contract, cur = C.current(s);
-  const codes = new Set(so.activities.map((a) => a.code));
-  const known = new Set(GROUPS.flatMap((g) => g[2])), extra = so.activities.map((a) => a.code).filter((c) => !known.has(c));
-  // only buttons for activities the loaded contract has (an older site file lacks the revision b ones)
-  const groups = GROUPS.map(([g, col, cs]) => [g, col, cs.filter((c) => codes.has(c))]).filter((g) => g[2].length)
-    .concat(extra.length ? [["More", "--g-oth", extra]] : []);
-  const label = (c) => (so.activities.find((a) => a.code === c) || {}).label || c;
+  const s = S(); if (!s) { A.view = "home"; return render(); }
+  const st = siteFor(s) || site(), cur = C.current(s), now = new Date();
   const lastPlace = s.places.length ? s.places[s.places.length - 1].place : null;
-  const recent = []; for (let i = s.places.length - 1; i >= 0 && recent.length < 5; i--) if (!recent.includes(s.places[i].place)) recent.push(s.places[i].place);
-  const placeName = (id) => (st.places.find((p) => p.id === id) || {}).label || id;
-  const computer = cur && C.isComputer(st, cur.activity);
-  const status = s.status === "ready" ? "Ready: tap the first activity to start the clock" : s.status === "paused" ? "PAUSED (time not observed)" : "Running";
-  const zones = {}; for (const p of st.places) (zones[p.zone || "_"] = zones[p.zone || "_"] || []).push(p);
-  const zname = (z) => z === "_" ? "Shared / no zone" : ((st.zones.find((x) => x.id === z) || {}).name || z);
+  const paused = s.status === "paused", ready = s.status === "ready";
+  const due = C.contextDue(s, now); A.dueShown = due;
+  const ptOn = (tag) => (s.cur || null) === tag;
+  const ptTaken = cur && !C.takesPatient(st, cur.activity) && s.cur;
   $("#app").innerHTML = `
     <div class="now">
-      <div class="row spread"><span class="small"><strong>${esc(s.id)}</strong> · ${esc(status)}</span><button id="home" style="min-height:36px;padding:4px 10px">Home</button></div>
-      <div class="act">${s.status === "paused" ? "Paused" : cur ? esc(actLabel(cur.activity)) : "–"}${cur && cur.screen === "not_seen" ? ' <span class="chip">screen not seen</span>' : ""}</div>
-      <div class="row spread"><span class="timer" id="t-cur">0:00:00</span><span class="small muted">observed <span id="t-obs">0:00:00</span></span></div>
-      <div class="small muted">Place: ${esc(lastPlace ? placeName(lastPlace) : "not set")} · <span id="wake">Screen kept on: ${esc(A.wakeState)}</span></div>
+      <div class="row spread nowrap"><span class="meta"><strong>${esc(s.id)}</strong> · ${ready ? "ready: add patients, then tap the first activity" : paused ? "PAUSED (not observed)" : "running"}</span>
+        <button data-a="home" style="min-height:32px;padding:2px 10px;font-size:14px">Home</button></div>
+      <div class="row spread nowrap"><span class="act">${paused ? "Paused" : cur ? esc(actLabel(cur.activity)) + (cur.patient ? " · " + esc(cur.patient) : "") : "–"}${cur && cur.screen === "not_seen" ? ' <span class="chip">screen not seen</span>' : ""}</span>
+        <span class="timer" id="t-cur">0:00:00</span></div>
+      <div class="meta">Patient: <strong>${esc(s.cur || "none")}</strong>${ptTaken ? " (for the next patient task)" : ""} · Place: ${esc(lastPlace ? placeName(st, lastPlace) : "not set")}
+        ${s.mt ? ` · 2nd: <strong>${esc(actLabel(s.mt))}</strong>` : ""} · obs <span id="t-obs">0:00:00</span>${A.wakeState !== "on" && !ready ? ` · screen lock: ${esc(A.wakeState)}` : ""}</div>
+      ${cur && !paused && C.isComputer(st, cur.activity) ? `<button class="wide ${cur.screen === "not_seen" ? "on" : ""}" data-a="screen" style="min-height:36px;margin-top:4px;font-size:14px">${cur.screen === "not_seen" ? "Screen not visible: tap when you can see it again" : "Can't see their screen?"}</button>` : ""}
     </div>
-    ${computer && s.status === "running" ? `<button class="wide" id="screen" style="margin-top:8px">${cur.screen === "not_seen" ? "Screen visible again" : "Can't see the screen"}</button>` : ""}
-    ${groups.map(([g, col, cs]) => `<div class="grp">${esc(g)}</div><div class="grid">${cs.map((c) =>
-      `<button class="act-btn ${cur && cur.activity === c && s.status === "running" ? "on" : ""}" style="--gc:var(${col})" data-act="${esc(c)}" title="${esc(label(c))}" ${s.status === "paused" ? "disabled" : ""}>${esc(actLabel(c))}</button>`).join("")}</div>`).join("")}
-    <div class="grp">Place</div>
-    <div class="places">${recent.map((p) => `<button data-place="${esc(p)}" ${p === lastPlace ? 'class="primary"' : ""}>${esc(placeName(p))}</button>`).join("")}</div>
-    <select id="placepick" style="margin-top:6px"><option value="">Choose a place…</option>${Object.keys(zones).map((z) =>
-      `<optgroup label="${esc(zname(z))}">${zones[z].map((p) => `<option value="${esc(p.id)}">${esc(p.label)}${p.confirm ? " (?)" : ""}</option>`).join("")}</optgroup>`).join("")}</select>
-    <div class="bar">
-      <button id="pause" ${s.status === "ready" ? "disabled" : ""}>${s.status === "paused" ? "Resume" : "Pause"}</button>
-      <button id="end" class="${A.armed === "end" ? "armed" : "danger"}" ${s.status === "ready" ? "disabled" : ""}>${A.armed === "end" ? "Tap again to end" : "End session"}</button>
+    <div class="ptbar">
+      <button class="${ptOn(null) ? "on" : ""}" data-a="pt" data-v="">No pt</button>
+      ${s.patients.map((p) => `<button class="${ptOn(p.tag) ? "on" : ""}" data-a="pt" data-v="${esc(p.tag)}">${esc(p.tag)}</button>`).join("")}
+      <button data-a="ptnew" ${s.status === "ended" ? "disabled" : ""}>+ New</button>
     </div>
-    <h2>Recent</h2>
-    <div class="card tl">${s.intervals.slice(-8).reverse().map((r) => `<div>${esc(clock(r.start))}–${esc(r.end ? clock(r.end) : "now    ")} ${esc(actLabel(r.activity))}${r.screen === "not_seen" ? " (screen not seen)" : ""}</div>`).join("") || '<span class="muted">Nothing yet.</span>'}
-      ${s.pauses.length ? `<div class="muted">${s.pauses.length} pause(s)</div>` : ""}</div>
-    ${s.clockFixes ? `<div class="banner warn">The phone's clock went backwards ${s.clockFixes} time(s); those taps were placed just after the one before.</div>` : ""}`;
+    ${due ? `<div class="due"><span>Board snapshot due</span><button data-a="snap">Snapshot</button><button data-a="snapskip">Skip</button></div>` : ""}
+    <div class="grid4">${buttonCodes(st).map((c) => `<button class="act-btn ${cur && cur.activity === c && !paused ? "on" : ""}" style="--gc:var(${colourOf(c)})" data-a="act" data-v="${esc(c)}" ${paused ? "disabled" : ""}>${esc(actLabel(c))}</button>`).join("")}</div>
+    <div class="bar bar4">
+      <button class="ev-int" data-a="int" ${s.status !== "running" ? "disabled" : ""}>Interrupted</button>
+      <button class="ev-help" data-a="help" data-v="help_asked" ${s.status !== "running" ? "disabled" : ""}>Asked help</button>
+      <button class="ev-help" data-a="help" data-v="help_given" ${s.status !== "running" ? "disabled" : ""}>Gave help</button>
+      <button class="ev-mt ${s.mt ? "open" : ""}" data-a="mt" ${s.status !== "running" ? "disabled" : ""}>${s.mt ? "End 2nd" : "2nd task"}</button>
+    </div>
+    <div class="bar bar4">
+      <button data-a="where">Where</button>
+      <button data-a="undo" ${s.undo.length ? "" : "disabled"}>Undo</button>
+      <button data-a="fix" ${s.intervals.length ? "" : "disabled"}>Fix</button>
+      <button data-a="note" ${ready ? "disabled" : ""}>Note</button>
+    </div>
+    <div class="bar bar4">
+      <button data-a="pause" ${ready ? "disabled" : ""}>${paused ? "Resume" : "Pause"}</button>
+      <button data-a="snap" ${ready ? "disabled" : ""}>Snapshot</button>
+      <button data-a="timeline" ${ready ? "disabled" : ""}>Timeline</button>
+      <button data-a="end" class="${A.armed === "end" ? "armed" : "danger"}" ${ready ? "disabled" : ""}>${A.armed === "end" ? "Tap again" : "End"}</button>
+    </div>
+    ${s.clockFixes ? `<div class="banner warn small">The phone's clock went backwards ${s.clockFixes} time(s); those taps were placed just after the one before.</div>` : ""}`;
   paintTimers();
-  const save = async () => { await Store.saveSession(s); render(); };
-  document.querySelectorAll("[data-act]").forEach((b) => (b.onclick = () => { if (C.setActivity(s, st, b.dataset.act, new Date())) save(); }));
-  document.querySelectorAll("[data-place]").forEach((b) => (b.onclick = () => { if (C.setPlace(s, b.dataset.place, new Date())) save(); }));
-  $("#placepick").onchange = (e) => { if (e.target.value && C.setPlace(s, e.target.value, new Date())) save(); };
-  if ($("#screen")) $("#screen").onclick = () => { if (C.setScreen(s, st, cur.screen === "not_seen", new Date())) save(); };
-  $("#pause").onclick = () => { if (s.status === "paused" ? C.resume(s, new Date()) : C.pause(s, new Date())) save(); };
-  $("#end").onclick = () => {
-    if (A.armed !== "end") { A.armed = "end"; render(); setTimeout(() => { if (A.armed === "end") { A.armed = null; if (A.view === "session") render(); } }, 4000); return; }
-    A.armed = null;
-    if (C.end(s, new Date())) { Store.saveSession(s).then(() => { A.view = "export"; A.report = null; render(); }); }
-  };
-  $("#home").onclick = () => { A.view = "home"; render(); };
 }
 function paintTimers() {
-  const s = A.sessions[A.cur]; if (!s) return;
+  const s = S(); if (!s) return;
   const now = new Date(), cur = C.current(s), p = s.pauses[s.pauses.length - 1];
   const from = s.status === "paused" && p ? p.start : cur ? cur.start : null;
   const a = $("#t-cur"), b = $("#t-obs");
   if (a) a.textContent = from ? hms((now - Date.parse(from)) / 1000) : "0:00:00";
   if (b) b.textContent = hms(C.observedSec(s, now));
+  if (A.view === "session" && !A.sheet && C.contextDue(s, now) !== A.dueShown) render();
 }
 
+/* ---------------------------------------------------------------- bottom sheets */
+function renderLayer() {
+  const L = $("#layer"); let h = "";
+  if (A.sheet) h += `<div class="backdrop" data-a="close"></div><div class="sheet"><div class="inner">${sheetHtml()}</div></div>`;
+  if (A.toast) h += `<div class="toast">${esc(A.toast)}</div>`;
+  L.innerHTML = h;
+  if (A.sheet && A.sheet.kind === "note") { const t = $("#notetext"); if (t) { t.focus(); t.oninput = () => { $("#notecount").textContent = [...t.value].length + "/500"; }; } }
+}
+const closeBtn = `<button class="wide" data-a="close" style="margin-top:10px">Cancel</button>`;
+function sheetHtml() {
+  const s = S(), st = s ? (siteFor(s) || site()) : site(), k = A.sheet.kind, d = A.sheet;
+  if (k === "ptnew") return `<h2>New patient: ${esc(C.tagN(s.patients.length))}</h2>
+    <div class="muted small">Was the doctor already looking after this patient when the session started?</div>
+    <div class="opts" style="margin-top:8px"><button data-a="ptmake" data-v="false">New to them now</button><button data-a="ptmake" data-v="true">Already theirs</button><button data-a="ptmake" data-v="null">Not sure</button></div>${closeBtn}`;
+  if (k === "int") return `<h2>Interrupted at ${esc(clock(C.iso(d.t)))}</h2>
+    <h3>By</h3><div class="opts">${SOURCES.map(([v, l]) => `<button class="${d.source === v ? "on" : ""}" data-a="intsrc" data-v="${v}">${l}</button>`).join("")}</div>
+    <h3>What did they do?</h3><div class="opts two">${OUTCOMES.map(([v, l]) => `<button class="${d.outcome === v ? "on" : ""}" data-a="intout" data-v="${v}">${l}</button>`).join("")}</div>
+    <div class="muted small" style="margin-top:6px">Saved as soon as both are chosen. If they switched, tap the new activity next.</div>${closeBtn}`;
+  if (k === "help") return `<h2>${d.event === "help_asked" ? "Asked someone for help" : "Was asked for help"} at ${esc(clock(C.iso(d.t)))}</h2>
+    <div class="muted small">The other person's grade${s.cur ? `; saved with patient ${esc(s.cur)}` : ""}. Then log the time that follows (Discuss, or Wait senior).</div>
+    <div class="opts" style="margin-top:8px">${st.contract.tables.events.fields.find((f) => f.name === "grade").values.map((g) => `<button data-a="helpgrade" data-v="${g}">${esc((st.gradeLabels && st.gradeLabels[g]) || g)}</button>`).join("")}
+      <button data-a="helpgrade" data-v="">Don't know</button></div>${closeBtn}`;
+  if (k === "mt") return `<h2>Second task alongside ${esc(actLabel((C.current(s) || {}).activity))}</h2>
+    <div class="grid4">${buttonCodes(st).map((c) => `<button class="act-btn" style="--gc:var(${colourOf(c)})" data-a="mtact" data-v="${esc(c)}">${esc(actLabel(c))}</button>`).join("")}</div>${closeBtn}`;
+  if (k === "note") return `<h2>Note</h2>
+    <div class="banner warn small">No names, patient details, or bed numbers with times. The note is kept in the file but never analysed.</div>
+    <textarea id="notetext" rows="4" maxlength="500"></textarea><div class="row spread"><span class="muted small" id="notecount">0/500</span><button class="primary" data-a="notesave">Save note</button></div>${closeBtn}`;
+  if (k === "snap") { const step = (f, v) => `<div class="stepper"><button data-a="snapstep" data-v="${f}:-1">−</button><div class="v">${v === null ? "?" : v}</div><button data-a="snapstep" data-v="${f}:1">+</button></div>`;
+    return `<h2>Board snapshot</h2>
+    <h3>Patients waiting to be seen in the doctor's zone</h3>${step("waiting", d.waiting)}
+    <h3>Doctors on in that zone</h3>${step("doctorsOn", d.doctorsOn)}
+    <h3>Department in escalation?</h3><div class="opts">${[["yes", "Yes"], ["no", "No"], ["", "Don't know"]].map(([v, l]) => `<button class="${(d.escalation || "") === v ? "on" : ""}" data-a="snapesc" data-v="${v}">${l}</button>`).join("")}</div>
+    <div class="bar bar2" style="margin-top:12px"><button data-a="snapskip">Skip this one</button><button class="primary" data-a="snapsave">Save</button></div>${closeBtn}`; }
+  if (k === "where") return whereHtml(s, st, d);
+  if (k === "fix") { const m = C.canMoveBy(s), cur = C.current(s), recent = s.intervals.slice(-6).reverse();
+    return `<h2>Fix</h2>
+    ${cur && s.status === "running" ? `<h3>${esc(actLabel(cur.activity))} started late? Move its start back</h3>
+      <div class="opts four">${[10, 30, 60, 120].map((x) => `<button data-a="move" data-v="${x}" ${x > m ? "disabled" : ""}>${x < 60 ? x + " s" : x / 60 + " min"}</button>`).join("")}</div>
+      <div class="muted small">Takes the time from ${esc(actLabel((s.intervals[cur.seq - 2] || {}).activity || "–"))} before it.</div>` : ""}
+    <h3>Change an entry (the time stays)</h3>
+    <div class="tl">${recent.map((r) => `<div class="tlrow"><span>${esc(hhmm(r.start))}–${esc(r.end ? hhmm(r.end) : "now")} ${esc(actLabel(r.activity))}${r.patient ? " · " + esc(r.patient) : ""}</span><button data-a="relabel" data-v="${r.seq}">Change</button></div>`).join("")}</div>
+    <button class="wide" data-a="timeline" style="margin-top:8px">Whole timeline</button>${closeBtn}`; }
+  if (k === "relabel") { const r = s.intervals[d.seq - 1], act = d.activity || r.activity, pt = d.patient === undefined ? (r.patient || null) : d.patient;
+    return `<h2>Change ${esc(hhmm(r.start))}–${esc(r.end ? hhmm(r.end) : "now")}</h2>
+    <div class="grid4">${buttonCodes(st).map((c) => `<button class="act-btn ${c === act ? "on" : ""}" style="--gc:var(${colourOf(c)})" data-a="rlact" data-v="${esc(c)}">${esc(actLabel(c))}</button>`).join("")}</div>
+    ${C.takesPatient(st, act) ? `<h3>Patient</h3><div class="ptbar"><button class="${pt === null ? "on" : ""}" data-a="rlpt" data-v="">None</button>${s.patients.map((p) => `<button class="${pt === p.tag ? "on" : ""}" data-a="rlpt" data-v="${esc(p.tag)}">${esc(p.tag)}</button>`).join("")}</div>` : ""}
+    <button class="primary wide" data-a="rlsave" style="margin-top:10px">Save change</button>${closeBtn}`; }
+  return closeBtn;
+}
+
+/* ---------------------------------------------------------------- the floor plan */
+const KIND_FILL = { blue: "#dbe7fb", orange: "#fde3cf", orangewr: "#fdeede", purple: "#eadcf7", resus: "#f9d6d6", paeds: "#fff1c2", green: "#d9f2df",
+  hub: "#cfecef", staff: "#e5e9ee", support: "#f0f2f4", imaging: "#e6e1f5", lift: "#e2e2e2", liftcar: "#d4d4d4", stair: "#e2e2e2", entrance: "#d0e8ff" };
+function zoneBox(st, zone) {
+  const pts = st.places.filter((p) => p.x !== null && (zone === "all" || p.zone === zone));
+  let x0, x1, y0, y1;
+  const b = (st.outline || []).find((o) => o.kind === "building");
+  if (zone === "all" && b) { const xs = b.points.map((p) => p[0]), ys = b.points.map((p) => p[1]); x0 = Math.min(...xs); x1 = Math.max(...xs); y0 = Math.min(...ys); y1 = Math.max(...ys); }
+  else if (pts.length) { x0 = Math.min(...pts.map((p) => p.x)) - 4; x1 = Math.max(...pts.map((p) => p.x)) + 4; y0 = Math.min(...pts.map((p) => p.y)) - 4; y1 = Math.max(...pts.map((p) => p.y)) + 4; }
+  else { const B = st.bounds || { xMin: 0, xMax: 10, yMin: 0, yMax: 10 }; x0 = B.xMin - 2; x1 = B.xMax + 2; y0 = B.yMin - 2; y1 = B.yMax + 2; }
+  const w = Math.max(x1 - x0, 14), h = Math.max(y1 - y0, 14);
+  return [x0 - (w - (x1 - x0)) / 2, y0 - (h - (y1 - y0)) / 2, w, h];
+}
+function whereHtml(s, st, d) {
+  const lastPlace = s.places.length ? s.places[s.places.length - 1].place : null;
+  const recent = []; for (let i = s.places.length - 1; i >= 0 && recent.length < 6; i--) if (!recent.includes(s.places[i].place)) recent.push(s.places[i].place);
+  const zones = st.zones.filter((z) => st.places.some((p) => p.zone === z.id && p.x !== null));
+  const zone = d.zone || "all", [vx, vy, vw, vh] = zoneBox(st, zone);
+  const u = Math.max(vw, vh * 0.85) / 340;                       // metres per screen pixel, roughly
+  // a room that holds a place selects that place when tapped (a bigger target than the dot)
+  const inside = (pt, poly) => { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i], [xj, yj] = poly[j]; if ((yi > pt[1]) !== (yj > pt[1]) && pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi) c = !c; } return c; };
+  const shapes = (st.outline || []).map((o) => { const pts = o.points.map((p) => p.join(",")).join(" ");
+    if (o.kind === "building") return `<polygon points="${pts}" fill="#fff" stroke="#8994a0" stroke-width="0.25"/>`;
+    const hit = o.kind === "door" ? null : st.places.find((p) => p.x !== null && inside([p.x, p.y], o.points));
+    return `<polygon points="${pts}" fill="${o.kind === "door" ? "#8994a0" : hit && hit.id === lastPlace ? "#8fd0e3" : KIND_FILL[o.kind] || "#eef1f4"}" stroke="${hit && hit.id === lastPlace ? "#0b6e8a" : "#b7c0c9"}" stroke-width="0.08"${hit ? ` data-a="place" data-v="${esc(hit.id)}" style="cursor:pointer"` : ""}><title>${esc(o.name)}</title></polygon>`; }).join("");
+  // rooms holding a place carry their own name; dots are small; only places outside any room get a dot label
+  const roomed = new Set(), labels = [];
+  for (const o of st.outline || []) {
+    if (o.kind === "building" || o.kind === "door") continue;
+    const hit = st.places.find((p) => p.x !== null && inside([p.x, p.y], o.points));
+    if (!hit) continue;
+    roomed.add(hit.id);
+    if (zone !== "all") { const cx = o.points.reduce((t, q) => t + q[0], 0) / o.points.length, cy = o.points.reduce((t, q) => t + q[1], 0) / o.points.length;
+      const w = Math.max(...o.points.map((q) => q[0])) - Math.min(...o.points.map((q) => q[0])), name = o.name.length > 9 ? o.name.replace(/^(Blue|Paeds|Green) /, "").slice(0, 9) : o.name;
+      const fs = Math.min(10 * u, w / Math.max(3, name.length) * 1.7);
+      labels.push(`<text x="${cx}" y="${cy + fs * 0.35}" font-size="${fs}" text-anchor="middle" fill="#14202b" style="pointer-events:none">${esc(name)}</text>`); }
+  }
+  const dots = st.places.filter((p) => p.x !== null && !(zone !== "all" && roomed.has(p.id))).map((p) => {
+    const on = p.id === lastPlace, inZone = zone === "all" || p.zone === zone, inRoom = roomed.has(p.id);
+    const r = (zone === "all" ? 3.5 : inRoom ? 3 : 7) * u * (on ? 1.6 : 1);
+    return `<g data-a="place" data-v="${esc(p.id)}" style="cursor:pointer"><circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${on ? "#0b6e8a" : inZone ? "#2b62c4" : "#9aa6b2"}" fill-opacity="${on ? 1 : inZone ? 0.8 : 0.4}" stroke="#fff" stroke-width="${1 * u}"/>
+      ${zone !== "all" && inZone && !inRoom ? `<text x="${p.x + 9 * u}" y="${p.y + 3.5 * u}" font-size="${9 * u}" fill="#14202b" style="pointer-events:none;paint-order:stroke" stroke="#fff" stroke-width="${2.5 * u}">${esc(p.label.length > 14 ? p.label.slice(0, 13) + "…" : p.label)}</text>` : ""}</g>`; }).join("");
+  const off = st.places.filter((p) => p.x === null);
+  return `<h2>Where is the doctor?</h2>
+    ${recent.length ? `<div class="row" style="margin-bottom:6px">${recent.map((p) => `<button class="${p === lastPlace ? "on" : ""}" data-a="place" data-v="${esc(p)}" style="min-height:38px;font-size:14px">${esc(placeName(st, p))}</button>`).join("")}</div>` : ""}
+    <div class="tabs"><button class="${zone === "all" ? "on" : ""}" data-a="zone" data-v="all">All</button>${zones.map((z) => `<button class="${zone === z.id ? "on" : ""}" data-a="zone" data-v="${esc(z.id)}">${esc(z.name)}</button>`).join("")}</div>
+    <svg class="plan" style="height:auto;aspect-ratio:${vw.toFixed(2)} / ${vh.toFixed(2)};max-height:60vh" viewBox="${vx} ${vy} ${vw} ${vh}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">${shapes}${labels.join("")}${dots}</svg>
+    <div class="muted small">${zone === "all" ? "Choose a zone above to zoom in." : "Tap a room, or a dot outside the rooms. The name shows at the bottom; Undo if wrong."} ${st.outline && st.outline.length ? "" : "(This site file has no floor plan outline.)"}</div>
+    ${off.length ? `<h3>Off the plan</h3><div class="row">${off.map((p) => `<button class="${p.id === lastPlace ? "on" : ""}" data-a="place" data-v="${esc(p.id)}" style="min-height:38px;font-size:14px">${esc(p.label)}</button>`).join("")}</div>` : ""}
+    <h3>All places</h3><select id="placepick"><option value="">Choose…</option>${(() => { const g = {}; for (const p of st.places) (g[p.zone || "_"] = g[p.zone || "_"] || []).push(p);
+      return Object.keys(g).map((z) => `<optgroup label="${esc(z === "_" ? "Shared" : ((st.zones.find((x) => x.id === z) || {}).name || z))}">${g[z].map((p) => `<option value="${esc(p.id)}">${esc(p.label)}${p.confirm ? " (?)" : ""}</option>`).join("")}</optgroup>`).join(""); })()}</select>
+    ${closeBtn}`;
+}
+
+/* ---------------------------------------------------------------- timeline (a workflow time chart: rows by patient) */
+function chartSvg(s, st, now) {
+  const t0 = Date.parse(s.session.start), t1 = s.session.end ? Date.parse(s.session.end) : now.getTime();
+  const mins = Math.max(1, (t1 - t0) / 60000), ppm = Math.max(4, 300 / mins), L = 44, W = Math.ceil(L + mins * ppm + 10);
+  const rows = [null].concat(s.patients.map((p) => p.tag)), rh = 20, top = 22, H = top + rows.length * rh + 18;
+  const X = (t) => L + (t - t0) / 60000 * ppm, Y = (tag) => top + rows.indexOf(tag || null) * rh;
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim() || "#888";
+  let g = "";
+  for (let m = 0; m <= mins; m += mins > 120 ? 30 : 15) g += `<line x1="${X(t0 + m * 60000)}" x2="${X(t0 + m * 60000)}" y1="${top - 4}" y2="${H - 16}" stroke="${css("--line")}"/><text x="${X(t0 + m * 60000)}" y="${H - 4}" font-size="10" text-anchor="middle" fill="${css("--muted")}">${hhmm(C.iso(new Date(t0 + m * 60000)))}</text>`;
+  rows.forEach((r) => { g += `<text x="4" y="${Y(r) + 14}" font-size="11" fill="${css("--muted")}">${r ? "Pt " + r : "No pt"}</text>`; });
+  for (const p of s.pauses) g += `<rect x="${X(Date.parse(p.start))}" y="${top}" width="${Math.max(1, X(p.end ? Date.parse(p.end) : t1) - X(Date.parse(p.start)))}" height="${rows.length * rh}" fill="${css("--muted")}" fill-opacity=".18"/>`;
+  for (const r of s.intervals) { const a = Date.parse(r.start), b = r.end ? Date.parse(r.end) : t1;
+    g += `<rect x="${X(a)}" y="${Y(r.patient) + 3}" width="${Math.max(1.5, X(b) - X(a))}" height="${rh - 6}" rx="2" fill="${css(colourOf(r.activity))}" fill-opacity="${r.activity === "unseen" ? 0.3 : 0.9}"><title>${esc(hhmm(r.start))} ${esc(actLabel(r.activity))}</title></rect>`; }
+  for (const e of s.events) { const x = X(Date.parse(e.time)), col = e.event === "interruption" ? "--ev-int" : e.event.startsWith("help") ? "--ev-help" : "--ev-mt";
+    g += `<line x1="${x}" x2="${x}" y1="4" y2="${top + rows.length * rh}" stroke="${css(col)}" stroke-width="1.2" stroke-opacity=".8"/><circle cx="${x}" cy="8" r="3.5" fill="${css(col)}"><title>${esc(clock(e.time))} ${esc(e.event)}${e.source ? " · " + esc(e.source) : ""}${e.outcome ? " · " + esc(e.outcome) : ""}</title></circle>`; }
+  return `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, system-ui, sans-serif">${g}</svg>`;
+}
+function renderTimeline() {
+  const s = S(); if (!s) { A.view = "home"; return render(); }
+  const st = siteFor(s) || site(), now = new Date();
+  const items = s.intervals.map((r) => ({ t: r.start, h: `${esc(hhmm(r.start))}–${esc(r.end ? hhmm(r.end) : "now")} ${esc(actLabel(r.activity))}${r.patient ? " · " + esc(r.patient) : ""}${r.screen === "not_seen" ? " (screen not seen)" : ""}`, seq: r.seq }))
+    .concat(s.pauses.map((p) => ({ t: p.start, h: `${esc(hhmm(p.start))}–${esc(p.end ? hhmm(p.end) : "now")} <em>paused</em>` })),
+      s.events.map((e) => ({ t: e.time, h: `${esc(clock(e.time))} ▸ ${esc(e.event.replace("_", " "))}${e.source ? " · " + esc(e.source) : ""}${e.outcome ? " · " + esc(e.outcome) : ""}${e.grade ? " · " + esc(e.grade) : ""}${e.activity ? " · " + esc(actLabel(e.activity)) : ""}${e.patient ? " · " + esc(e.patient) : ""}` })),
+      s.context.map((c) => ({ t: c.time, h: `${esc(clock(c.time))} ▸ snapshot: waiting ${c.waiting ?? "?"}, doctors ${c.doctorsOn ?? "?"}, escalation ${c.escalation ?? "?"}` })),
+      s.notes.map((n) => ({ t: n.time, h: `${esc(clock(n.time))} ▸ note: ${esc(n.text)}` })))
+    .sort((a, b) => (a.t < b.t ? 1 : -1));
+  $("#app").innerHTML = `
+    <div class="row spread"><h1>Timeline ${esc(s.id)}</h1><button data-a="${s.status === "ended" ? "exportOf" : "open"}" data-v="${esc(s.id)}">Back</button></div>
+    <div class="chart">${s.session.start ? chartSvg(s, st, now) : ""}</div>
+    <div class="muted small" style="margin:4px 0 8px">Rows: no patient, then each patient tag. Colours: blue with a patient, teal computer, green talking, pink waiting, grey other; shading = paused. Dots: red interruption, blue help, green second task.</div>
+    <div class="card tl">${items.map((i) => `<div class="tlrow"><span>${i.h}</span>${i.seq ? `<button data-a="relabel" data-v="${i.seq}">Change</button>` : ""}</div>`).join("") || "Nothing yet."}</div>
+    <div class="muted small">${s.edits.length} correction(s) and undo(s) so far, all kept in the file's audit trail.</div>`;
+}
+
+/* ---------------------------------------------------------------- export */
 function renderExport() {
-  const s = A.sessions[A.cur]; if (!s) { A.view = "home"; return render(); }
+  const s = S(); if (!s) { A.view = "home"; return render(); }
   const st = siteFor(s);
   let doc = null, rep = null, err = null;
   try { doc = C.exportDoc(s, TMv); rep = st ? TMv.validate(JSON.parse(JSON.stringify(doc)), st, C.fileName(doc)) : null; } catch (e) { err = e.message; }
   const lines = rep ? [`${rep.ok ? "Accepted" : "REFUSED"}: ${rep.errors.length} error(s), ${rep.warnings.length} warning(s)`]
     .concat(rep.errors.map((e) => "error   " + e.message), rep.warnings.map((w) => "warning " + w.message),
-      rep.summary ? [`${rep.summary.intervals} intervals; observed ${hms(rep.summary.observedSec)}, out of view ${hms(rep.summary.unseenSec)}, paused ${hms(rep.summary.pausedSec)}`] : []) : [];
+      rep.summary ? [`${rep.summary.intervals} intervals, ${rep.summary.patients} patients, ${rep.summary.events} events; observed ${hms(rep.summary.observedSec)}, out of view ${hms(rep.summary.unseenSec)}, paused ${hms(rep.summary.pausedSec)}`] : []) : [];
+  const yn = (tag, field, v) => [["true", "Yes"], ["false", "No"], ["null", "?"]].map(([x, l]) => `<button class="${String(v === undefined ? null : v) === x ? "on" : ""}" data-a="flag" data-v="${esc(tag)}:${field}:${x}">${l}</button>`).join("");
   $("#app").innerHTML = `
-    <h1>Export ${esc(s.id)}</h1>
+    <div class="row spread"><h1>Export ${esc(s.id)}</h1><button data-a="timeline">Timeline</button></div>
+    ${s.patients.length ? `<div class="card"><h3 style="margin-top:0">Patients</h3>
+      <div class="muted small" style="margin-bottom:6px">Already theirs when the session started? Still theirs when it ended?</div>
+      <div class="flags">${s.patients.map((p) => `<strong>${esc(p.tag)}</strong><div><div class="row small"><span style="width:6.5em">Started before</span><div class="opts" style="flex:1">${yn(p.tag, "startedBefore", p.startedBefore)}</div></div>
+        <div class="row small" style="margin-top:4px"><span style="width:6.5em">Still theirs at end</span><div class="opts" style="flex:1">${yn(p.tag, "openAtEnd", p.openAtEnd)}</div></div></div>`).join("")}</div></div>` : ""}
     ${err ? `<div class="banner bad">${esc(err)}</div>` : ""}
     ${!st ? `<div class="banner warn">The site file for "${esc(s.siteId)}" isn't loaded, so the file can't be checked here.</div>` : ""}
-    ${st && !revOk(st) ? `<div class="banner warn">Checked against an older contract (revision ${esc(revText(st))}); this app writes revision ${esc(C.CONTRACT_REVISION)}, so the simulator's check may differ from this one.</div>` : ""}
+    ${st && !revOk(st) ? `<div class="banner warn">Checked against an older contract (revision ${esc(revText(st))}); this app writes revision ${esc(C.CONTRACT_REVISION)}, so the simulator's check may differ.</div>` : ""}
     ${rep ? `<div class="banner ${rep.ok ? "ok" : "bad"}"><strong>Checked with the contract's validator (tm.js).</strong></div><div class="card"><pre class="rep">${esc(lines.join("\n"))}</pre></div>` : ""}
-    <div class="muted small">File: ${doc ? esc(C.fileName(doc)) : ""}. Saving it goes through the share sheet: choose "Save to Files" (or wherever you've agreed with IG). Nothing is sent by the app.</div>
-    <div class="bar"><button class="primary" id="sj" ${doc ? "" : "disabled"}>Share JSON (the record)</button><button id="sc" ${doc ? "" : "disabled"}>Share CSV (to check by eye)</button></div>
+    <div class="muted small">File: ${doc ? esc(C.fileName(doc)) : ""}. Saving goes through the share sheet: choose "Save to Files" (or wherever you've agreed with IG). Nothing is sent by the app.</div>
+    <div class="bar bar2"><button class="primary" data-a="share" data-v="json" ${doc ? "" : "disabled"}>Share JSON (the record)</button><button data-a="share" data-v="csv" ${doc ? "" : "disabled"}>Share CSV (to check by eye)</button></div>
     <div id="exmsg"></div>
-    <button class="wide" id="home" style="margin-top:14px">Home</button>
+    <button class="wide" data-a="home" style="margin-top:12px">Home</button>
     <div class="muted small" style="margin-top:8px">Exported: ${esc(when(s.exportedAt))}</div>`;
-  $("#home").onclick = () => { A.view = "home"; render(); };
-  const go = async (kind) => {
-    const text = kind === "csv" ? C.csv(doc) : JSON.stringify(doc, null, 1), name = C.fileName(doc, kind);
-    const done = await shareOrDownload(text, name, kind === "csv" ? "text/csv" : "application/json");
-    if (done && kind === "json") { s.exportedAt = C.iso(new Date()); A.lastExport = s.exportedAt; await Store.kvSet("lastExport", A.lastExport); await Store.saveSession(s); render(); }
-    if (done === false) $("#exmsg").innerHTML = `<div class="banner warn">Not saved (the share sheet was closed).</div>`;
-  };
-  if (doc) { $("#sj").onclick = () => go("json"); $("#sc").onclick = () => go("csv"); }
+  A.doc = doc;
 }
 /** true = shared or downloaded, false = cancelled. */
 async function shareOrDownload(text, name, type) {
@@ -1014,6 +1279,79 @@ async function shareOrDownload(text, name, type) {
   setTimeout(() => URL.revokeObjectURL(url), 30000);
   return true;
 }
+
+/* ---------------------------------------------------------------- taps */
+async function onClick(e) {
+  const el = e.target.closest("[data-a]"); if (!el || el.disabled) return;
+  const a = el.dataset.a, v = el.dataset.v, s = S(), st = s ? (siteFor(s) || site()) : site(), now = new Date(), sh = A.sheet;
+  const close = () => { A.sheet = null; };
+  switch (a) {
+    case "close": close(); return renderLayer();
+    case "home": close(); A.view = "home"; A.armed = null; return render();
+    case "new": await askPersist(); A.view = "new"; return render();
+    case "regen": $("#code").value = C.randomCode("TM"); return;
+    case "ready": return createSession();
+    case "open": A.cur = v; A.view = "session"; return render();
+    case "exportOf": A.cur = v; A.view = "export"; return render();
+    case "del":
+      if (A.armed !== v) { A.armed = v; render(); setTimeout(() => { if (A.armed === v) { A.armed = null; if (A.view === "home") render(); } }, 4000); return; }
+      A.armed = null; await Store.deleteSession(v); delete A.sessions[v]; return render();
+    case "loadsite": return $("#sitefile").click();
+    case "persist": await askPersist(); await refreshStorageInfo(); return render();
+    case "update":
+      try { const r = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); if (r) await r.update(); } catch (err) { /* offline */ }
+      return location.reload();
+    case "timeline": close(); A.view = "timeline"; return render();
+    // --- session
+    case "act": if (C.setActivity(s, st, v, now)) return save(); return;
+    case "screen": { const c = C.current(s); if (c && C.setScreen(s, st, c.screen === "not_seen", now)) return save(c.screen === "not_seen" ? "Screen visible again" : "Screen not visible"); return; }
+    case "pt": if (C.setPatient(s, st, v || null, now)) return save(v ? "Patient " + v : "No patient"); return;
+    case "ptnew": A.sheet = { kind: "ptnew" }; return renderLayer();
+    case "ptmake": { close(); const tag = C.newPatient(s, st, v === "true" ? true : v === "false" ? false : null, now); return save("Patient " + tag); }
+    case "int": A.sheet = { kind: "int", t: now }; return renderLayer();
+    case "intsrc": case "intout":
+      sh[a === "intsrc" ? "source" : "outcome"] = v;
+      if (sh.source && sh.outcome) { close(); if (C.addEvent(s, st, { event: "interruption", source: sh.source, outcome: sh.outcome }, sh.t)) return save("Interruption saved"); return render(); }
+      return renderLayer();
+    case "help": A.sheet = { kind: "help", event: v, t: now }; return renderLayer();
+    case "helpgrade": close(); if (C.addEvent(s, st, { event: sh.event, grade: v || null, source: v ? SOURCE_OF_GRADE[v] : null }, sh.t)) return save(sh.event === "help_asked" ? "Asked for help" : "Gave help"); return render();
+    case "mt": if (s.mt) { if (C.addEvent(s, st, { event: "multitask_end" }, now)) return save("2nd task ended"); return; } A.sheet = { kind: "mt" }; return renderLayer();
+    case "mtact": close(); if (C.addEvent(s, st, { event: "multitask_start", activity: v }, now)) return save("2nd task: " + actLabel(v)); return render();
+    case "where": A.sheet = { kind: "where", zone: (() => { const lp = s.places.length ? st.places.find((p) => p.id === s.places[s.places.length - 1].place) : null; return (lp && lp.x !== null && lp.zone) || s.session.zone || "all"; })() }; return renderLayer();
+    case "zone": sh.zone = v; return renderLayer();
+    case "place": close(); if (C.setPlace(s, v, now)) return save(placeName(st, v)); return render();
+    case "undo": { const w = C.undo(s, now); if (w) return save("Undone (" + w.table + ")"); return; }
+    case "fix": A.sheet = { kind: "fix" }; return renderLayer();
+    case "move": close(); if (C.moveStart(s, Number(v), now)) return save("Start moved back " + v + " s"); return render();
+    case "relabel": { const r = s.intervals[Number(v) - 1]; A.sheet = { kind: "relabel", seq: Number(v), activity: r.activity, patient: r.patient || null }; return renderLayer(); }
+    case "rlact": sh.activity = v; return renderLayer();
+    case "rlpt": sh.patient = v || null; return renderLayer();
+    case "rlsave": close(); if (C.relabel(s, st, sh.seq, { activity: sh.activity, patient: sh.patient }, now)) { if (s.status === "ended") s.exportedAt = null; return save("Changed"); } return render();
+    case "note": A.sheet = { kind: "note" }; return renderLayer();
+    case "notesave": { const t = $("#notetext").value; if (C.addNote(s, t, now)) { close(); return save("Note saved"); } return; }
+    case "snap": { const last = s.context[s.context.length - 1] || {}; A.sheet = { kind: "snap", waiting: last.waiting ?? null, doctorsOn: last.doctorsOn ?? null, escalation: last.escalation ?? null }; return renderLayer(); }
+    case "snapstep": { const [f, d] = v.split(":"); sh[f] = Math.max(0, (sh[f] ?? (Number(d) > 0 ? -1 : 1)) + Number(d)); return renderLayer(); }
+    case "snapesc": sh.escalation = v || null; return renderLayer();
+    case "snapsave": close(); if (C.addContext(s, { waiting: sh.waiting, doctorsOn: sh.doctorsOn, escalation: sh.escalation }, now)) return save("Snapshot saved"); return render();
+    case "snapskip": close(); C.skipContext(s, now); return save("Snapshot skipped");
+    case "pause": if (s.status === "paused" ? C.resume(s, now) : C.pause(s, now)) return save(s.status === "paused" ? "Paused" : "Resumed"); return;
+    case "end":
+      if (A.armed !== "end") { A.armed = "end"; render(); setTimeout(() => { if (A.armed === "end") { A.armed = null; if (A.view === "session") render(); } }, 4000); return; }
+      A.armed = null; if (C.end(s, now)) { A.view = "export"; return save(); } return;
+    // --- export
+    case "flag": { const [tag, field, x] = v.split(":"); if (C.setFlag(s, tag, field, x === "true" ? true : x === "false" ? false : null, now)) { s.exportedAt = null; return save(); } return; }
+    case "share": {
+      const doc = A.doc, kind = v; if (!doc) return;
+      const done = await shareOrDownload(kind === "csv" ? C.csv(doc) : JSON.stringify(doc, null, 1), C.fileName(doc, kind), kind === "csv" ? "text/csv" : "application/json");
+      if (done && kind === "json") { s.exportedAt = C.iso(new Date()); A.lastExport = s.exportedAt; await Store.kvSet("lastExport", A.lastExport); return save("Exported"); }
+      if (done === false) $("#exmsg").innerHTML = `<div class="banner warn">Not saved (the share sheet was closed).</div>`;
+      return;
+    }
+  }
+}
+document.addEventListener("change", (e) => {
+  if (e.target.id === "placepick" && e.target.value) { const s = S(), st = siteFor(s) || site(); A.sheet = null; if (C.setPlace(s, e.target.value, new Date())) save(placeName(st, e.target.value)); else render(); }
+});
 
 boot().catch((e) => { $("#app").innerHTML = `<div class="banner bad">The app couldn't start: ${esc(e.message)}</div>`; });
 </script>
